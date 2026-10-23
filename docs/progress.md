@@ -54,7 +54,11 @@ every milestone.
       handle gets half the front (`width/2 - 120`), otherwise holes would land
       outside the front. Drawer box sizes, runner deductions and siphon notch
       depth are our assumptions.
-- [ ] 4. Pricing + tests
+- [x] **4. Pricing** — `pricing.config.ts` (all rates), `pricing.ts`
+      (`price(config, panels)`, `subtotals`). Integer grosze, margin inside
+      every line, total = sum of lines. Calibrated: default 1237.12 PLN,
+      ≈ 0.39 PLN/mm width, ≈ 0.34 PLN/mm height (tests check ranges, not exact
+      amounts). 218 tests. All rates are our own estimates.
 - [ ] 5. 3D scene from panels
 - [ ] 6. Stepper UI + store + URL sync
 - [ ] 7. Cut-outs & handles in 3D, open-drawers toggle
