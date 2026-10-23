@@ -9,12 +9,9 @@ export interface Decor {
   id: string
   name: string
   code: string
-  /** Hex colour used for flat shading in the 3D view. */
   color: string
   texture?: string
-  /** Board types this decor is available on (R9). */
   boards: readonly BoardType[]
-  /** Multiplier applied to the board price per m². */
   pricePerM2Modifier: number
 }
 
@@ -30,7 +27,6 @@ export const BOARDS: readonly Board[] = [
   { id: 'perfectsense', name: 'PerfectSense matt' },
 ]
 
-/** Drawer boxes are always made of laminated chipboard. */
 export const DRAWER_BOARD: BoardType = 'chipboard'
 
 export const DECORS: readonly Decor[] = [

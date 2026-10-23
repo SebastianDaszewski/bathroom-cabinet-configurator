@@ -1,7 +1,6 @@
 import { OrbitControls } from '@react-three/drei'
 import { Canvas } from '@react-three/fiber'
 
-// Placeholder scene — replaced by the panel-driven scene in milestone 5.
 export default function App() {
   return (
     <main className="app">

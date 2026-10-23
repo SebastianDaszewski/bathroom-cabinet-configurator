@@ -1,8 +1,5 @@
 import { z } from 'zod'
 
-// The schema checks types and enums only. Ranges and cross-field constraints
-// are enforced by normalize() in ./rules, which never throws.
-
 export const LIMITS = {
   width: { min: 500, max: 1200, step: 1 },
   height: { min: 400, max: 600, step: 1 },
@@ -89,11 +86,6 @@ export const DEFAULT_CONFIG: Config = {
   handlePosition: 'center',
 }
 
-/**
- * Lenient parser for untrusted input (URL, localStorage): every top-level
- * field that is missing or has the wrong type falls back to its default.
- * The result still has to go through normalize().
- */
 export function parseConfig(input: unknown): Config {
   const source: Record<string, unknown> =
     typeof input === 'object' && input !== null ? (input as Record<string, unknown>) : {}

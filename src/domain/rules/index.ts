@@ -6,8 +6,6 @@ import { applyDoubleHandleWidth, applyHandleCompatibility, applyHandleSpacing } 
 import { applySiphonCut } from './siphon'
 import type { Rule, RuleResult } from './types'
 
-// Order matters: R1 clamps the dimensions the later rules depend on, and R4
-// runs before R7 so a removed drilling is not downgraded first.
 const RULES: readonly Rule[] = [
   applyDecorCompatibility,
   clampDimensions,
@@ -18,7 +16,6 @@ const RULES: readonly Rule[] = [
   applySiphonCut,
 ]
 
-/** Makes any schema-valid config satisfy all rules. Never throws. */
 export function normalize(config: Config): RuleResult {
   return RULES.reduce<RuleResult>(
     (acc, rule) => {

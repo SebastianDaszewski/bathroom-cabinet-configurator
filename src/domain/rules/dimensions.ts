@@ -1,7 +1,6 @@
 import { DEFAULT_CONFIG, LIMITS, type LimitedField } from '../schema'
 import type { Adjustment, Rule } from './types'
 
-/** Rounds to the nearest step and clamps to [min, max]. Non-finite values become `fallback`. */
 export function clampToStep(
   value: number,
   { min, max, step }: { min: number; max: number; step: number },
@@ -14,7 +13,6 @@ export function clampToStep(
 
 const LIMITED_FIELDS = Object.keys(LIMITS) as LimitedField[]
 
-/** R1: numeric fields are clamped to their ranges; non-integer input is rounded. */
 export const clampDimensions: Rule = (input) => {
   const config = { ...input }
   const adjustments: Adjustment[] = []
