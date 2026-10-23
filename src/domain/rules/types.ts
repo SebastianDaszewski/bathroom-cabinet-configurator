@@ -1,6 +1,6 @@
 import type { Config } from '../schema'
 
-export type RuleId = 'R1' | 'R3' | 'R4' | 'R6' | 'R7' | 'R8' | 'R9'
+export type RuleId = 'R1' | 'R3' | 'R4' | 'R6' | 'R7' | 'R8' | 'R9' | 'R11'
 
 export interface Adjustment {
   rule: RuleId

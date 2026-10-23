@@ -44,6 +44,7 @@ export const ConfigSchema = z.object({
   drawers: z.object({ top: DrawerSchema, bottom: DrawerSchema }),
   siphonPosition: z.enum(SIPHON_POSITIONS),
   siphonOffset: z.number(),
+  siphonX: z.number(),
   drawerDecor: z.string(),
 
   frontBoard: z.enum(BOARD_TYPES),
@@ -74,6 +75,7 @@ export const DEFAULT_CONFIG: Config = {
   },
   siphonPosition: 'center',
   siphonOffset: 218,
+  siphonX: 300,
   drawerDecor: 'white-w960',
 
   frontBoard: 'chipboard',

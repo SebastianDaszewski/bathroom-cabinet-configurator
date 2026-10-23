@@ -3,7 +3,7 @@ import { applyDecorCompatibility } from './decor'
 import { clampDimensions } from './dimensions'
 import { applyDrawerLengths } from './drawerLength'
 import { applyDoubleHandleWidth, applyHandleCompatibility, applyHandleSpacing } from './handles'
-import { applySiphonCut } from './siphon'
+import { applySiphonCut, applySiphonPosition } from './siphon'
 import type { Rule, RuleResult } from './types'
 
 const RULES: readonly Rule[] = [
@@ -14,6 +14,7 @@ const RULES: readonly Rule[] = [
   applyDoubleHandleWidth,
   applyHandleSpacing,
   applySiphonCut,
+  applySiphonPosition,
 ]
 
 export function normalize(config: Config): RuleResult {
@@ -35,5 +36,5 @@ export {
   handleDrillingBlocker,
   maxHandleSpacing,
 } from './handles'
-export { maxSiphonOffset } from './siphon'
+export { maxSiphonOffset, siphonCenter, siphonXRange } from './siphon'
 export type { Adjustment, RuleId, RuleResult } from './types'

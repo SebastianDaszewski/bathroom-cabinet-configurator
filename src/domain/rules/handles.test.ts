@@ -77,14 +77,31 @@ describe('R6 handle spacing', () => {
     [600, 480],
     [1200, 480],
     [567, 416],
-  ])('width %d allows spacing up to %d', (width, max) => {
-    expect(maxHandleSpacing(width)).toBe(max)
-    expect(allowedHandleSpacings(width).at(-1)).toBe(max)
+  ])('width %d allows a single handle spacing up to %d', (width, max) => {
+    expect(maxHandleSpacing(width, 'single')).toBe(max)
+    expect(allowedHandleSpacings(width, 'single').at(-1)).toBe(max)
+  })
+
+  it.each([
+    [800, 256],
+    [1000, 352],
+    [1200, 480],
+  ])('width %d allows a double handle spacing up to %d', (width, max) => {
+    expect(maxHandleSpacing(width, 'double')).toBe(max)
   })
 
   it('lists spacings in steps of 32 from 32', () => {
-    expect(allowedHandleSpacings(500).slice(0, 3)).toEqual([32, 64, 96])
-    expect(allowedHandleSpacings(500)).toHaveLength(11)
+    expect(allowedHandleSpacings(500, 'single').slice(0, 3)).toEqual([32, 64, 96])
+    expect(allowedHandleSpacings(500, 'single')).toHaveLength(11)
+  })
+
+  it('limits double handles to half of the front', () => {
+    const result = applyHandleSpacing(config({ width: 800, handleDrilling: 'double' }))
+    expect(result.config.handleSpacing).toBe(128)
+    const wide = applyHandleSpacing(
+      config({ width: 800, handleDrilling: 'double', handleSpacing: 480 }),
+    )
+    expect(wide.config.handleSpacing).toBe(256)
   })
 
   it('falls back to the widest spacing that fits', () => {

@@ -20,16 +20,18 @@ export function allowedHandleDrillings(config: Config): HandleDrilling[] {
   )
 }
 
-export function maxHandleSpacing(width: number): number {
+export function maxHandleSpacing(width: number, drilling: HandleDrilling): number {
   const { min, max, step } = LIMITS.handleSpacing
-  const limit = Math.min(max, width - 2 * HANDLE_EDGE_MARGIN)
+  const widthPerHandle = drilling === 'double' ? width / 2 : width
+  const limit = Math.min(max, widthPerHandle - 2 * HANDLE_EDGE_MARGIN)
   return Math.max(min, Math.floor(limit / step) * step)
 }
 
-export function allowedHandleSpacings(width: number): number[] {
+export function allowedHandleSpacings(width: number, drilling: HandleDrilling): number[] {
   const { min, step } = LIMITS.handleSpacing
+  const max = maxHandleSpacing(width, drilling)
   const spacings: number[] = []
-  for (let spacing = min; spacing <= maxHandleSpacing(width); spacing += step) {
+  for (let spacing = min; spacing <= max; spacing += step) {
     spacings.push(spacing)
   }
   return spacings
@@ -73,7 +75,7 @@ export const applyDoubleHandleWidth: Rule = (config) => {
 }
 
 export const applyHandleSpacing: Rule = (config) => {
-  const max = maxHandleSpacing(config.width)
+  const max = maxHandleSpacing(config.width, config.handleDrilling)
   if (config.handleSpacing <= max) return { config, adjustments: [] }
 
   return {
@@ -84,7 +86,7 @@ export const applyHandleSpacing: Rule = (config) => {
         field: 'handleSpacing',
         from: config.handleSpacing,
         to: max,
-        reason: `A handle must stay ${HANDLE_EDGE_MARGIN} mm from the front edges; the widest spacing for this width is ${max} mm.`,
+        reason: `A handle must stay ${HANDLE_EDGE_MARGIN} mm from the front edges; the widest spacing here is ${max} mm.`,
       },
     ],
   }
