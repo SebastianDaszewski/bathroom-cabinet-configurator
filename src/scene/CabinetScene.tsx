@@ -6,10 +6,16 @@ import { CameraRig } from './CameraRig'
 import { DimensionLabels, DimensionLines, LabelProjector } from './DimensionGuides'
 import { DrawerGroup } from './DrawerGroup'
 import { CAMERA_FOV, cameraDistance, cameraPosition, dimensionGuides } from './geometry'
-import { drawerOffsets, hardwareItems } from './hardware'
+import {
+  CLOSED_DRAWERS,
+  drawerOffsets,
+  hardwareItems,
+  toggleAllDrawers,
+  type OpenDrawers,
+} from './hardware'
 import { HardwareMeshes } from './HardwareMeshes'
 import { PanelMeshes } from './PanelMeshes'
-import { panelMeshes } from './panelShape'
+import { glueBlocks, panelMeshes } from './panelShape'
 
 interface CabinetSceneProps {
   config: Config
@@ -18,8 +24,10 @@ interface CabinetSceneProps {
 
 export default function CabinetScene({ config, panels }: CabinetSceneProps) {
   const [cameraKey, setCameraKey] = useState(0)
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState<OpenDrawers>(CLOSED_DRAWERS)
+  const anyOpen = DRAWER_IDS.some((id) => open[id])
   const meshes = useMemo(() => panelMeshes(config, panels), [config, panels])
+  const blocks = useMemo(() => glueBlocks(config, panels), [config, panels])
   const hardware = useMemo(() => hardwareItems(config, panels), [config, panels])
   const guides = useMemo(() => dimensionGuides(config), [config])
   const offsets = drawerOffsets(config, open)
@@ -35,10 +43,20 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
         <hemisphereLight args={['#ffffff', '#d6d3d1', 1.2]} />
         <directionalLight position={[2, 3, 2]} intensity={1.4} />
         <directionalLight position={[-2, 1, -1]} intensity={0.4} />
-        <PanelMeshes meshes={meshes.filter((mesh) => mesh.drawer === null)} />
+        <PanelMeshes
+          meshes={meshes.filter((mesh) => mesh.drawer === null)}
+          blocks={blocks.filter((block) => block.drawer === null)}
+        />
         {DRAWER_IDS.map((id) => (
-          <DrawerGroup key={id} offset={offsets[id]}>
-            <PanelMeshes meshes={meshes.filter((mesh) => mesh.drawer === id)} />
+          <DrawerGroup
+            key={id}
+            offset={offsets[id]}
+            onToggle={() => setOpen((value) => ({ ...value, [id]: !value[id] }))}
+          >
+            <PanelMeshes
+              meshes={meshes.filter((mesh) => mesh.drawer === id)}
+              blocks={blocks.filter((block) => block.drawer === id)}
+            />
             <HardwareMeshes items={hardware.filter((item) => item.drawer === id)} />
           </DrawerGroup>
         ))}
@@ -51,10 +69,10 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
         <button
           type="button"
           className="scene-button"
-          aria-pressed={open}
-          onClick={() => setOpen((value) => !value)}
+          aria-pressed={anyOpen}
+          onClick={() => setOpen(toggleAllDrawers)}
         >
-          {open ? 'Zamknij szuflady' : 'Otwórz szuflady'}
+          {anyOpen ? 'Zamknij szuflady' : 'Otwórz szuflady'}
         </button>
         <button
           type="button"

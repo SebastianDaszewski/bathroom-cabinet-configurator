@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { buildPanels, type Panel } from '../domain/panels'
 import { normalize } from '../domain/rules'
 import { DEFAULT_CONFIG, type Config } from '../domain/schema'
-import { panelBasis, panelMatrix, panelMeshes, panelOutline } from './panelShape'
+import { glueBlocks, panelBasis, panelMatrix, panelMeshes, panelOutline } from './panelShape'
 
 const config = (overrides: Partial<Config> = {}): Config =>
   normalize({ ...DEFAULT_CONFIG, ...overrides }).config
@@ -100,5 +100,22 @@ describe('panelMeshes', () => {
   it('keeps the drawer each panel moves with', () => {
     expect(mesh('bottom')?.drawer).toBeNull()
     expect(mesh('front-bottom')?.drawer).toBe('bottom')
+  })
+})
+
+describe('glueBlocks', () => {
+  it('has no blocks without glued panels', () => {
+    expect(glueBlocks(DEFAULT_CONFIG, buildPanels(DEFAULT_CONFIG))).toEqual([])
+  })
+
+  it('outlines a thickened countertop as one 36 mm block', () => {
+    const input = config({ topThickening: 'double' })
+    const [block] = glueBlocks(input, buildPanels(input))
+
+    expect(block.id).toBe('top')
+    expect(block.drawer).toBeNull()
+    expect(block.size[0]).toBeCloseTo(0.6)
+    expect(block.size[1]).toBeCloseTo(0.036)
+    expect(block.size[2]).toBeCloseTo(0.523)
   })
 })

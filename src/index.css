@@ -10,6 +10,8 @@
   --glaze-soft: #dcebe8;
   --amber: #9a5b13;
   --amber-soft: #f6ebd9;
+  --danger: #a3342b;
+  --danger-deep: #84271f;
 
   --font-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
   --font-ui: 'Instrument Sans', 'Segoe UI', system-ui, sans-serif;
@@ -200,6 +202,11 @@ button {
 .step-group-title {
   margin-bottom: 12px;
   font-size: var(--text-lg);
+}
+
+.step-group-note {
+  margin: -6px 0 16px;
+  font-variant-numeric: tabular-nums;
 }
 
 .field {
@@ -470,6 +477,56 @@ button {
 .button-quiet:hover {
   color: var(--ink);
   text-decoration: underline;
+}
+
+.button-danger {
+  padding: 9px 16px;
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: var(--danger);
+  color: var(--surface);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button-danger:hover {
+  background: var(--danger-deep);
+}
+
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 24px 48px rgb(29 43 42 / 22%);
+}
+
+.dialog::backdrop {
+  background: rgb(29 43 42 / 45%);
+}
+
+.dialog-body {
+  padding: 24px;
+}
+
+.dialog-title {
+  margin-bottom: 8px;
+  font-size: var(--text-xl);
+}
+
+.dialog-message {
+  margin: 0 0 24px;
+  color: var(--ink-muted);
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .price-panel {

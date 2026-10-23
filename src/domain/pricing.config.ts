@@ -16,7 +16,7 @@ export const PRICING = {
   siphonCut: 29.5,
   hole: 2,
   gripGroovePerM: 25,
-  labourBase: 283,
+  labourBase: 264,
   labourPerPanel: 8,
   margin: 1.3,
 } as const

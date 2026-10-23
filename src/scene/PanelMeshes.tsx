@@ -1,7 +1,7 @@
 import { Edges } from '@react-three/drei'
 import { useEffect, useMemo } from 'react'
-import { ExtrudeGeometry, Matrix4, Path, Shape, Vector2 } from 'three'
-import type { PanelMesh, PanelOutline } from './panelShape'
+import { BoxGeometry, EdgesGeometry, ExtrudeGeometry, Matrix4, Path, Shape, Vector2 } from 'three'
+import type { GlueBlock, PanelMesh, PanelOutline } from './panelShape'
 
 const EDGE_COLOR = '#44403c'
 const HOLE_SEGMENTS = 16
@@ -32,16 +32,41 @@ function PanelMeshView({ mesh }: { mesh: PanelMesh }) {
   return (
     <mesh geometry={geometry} matrix={matrix} matrixAutoUpdate={false}>
       <meshStandardMaterial color={mesh.color} roughness={0.7} />
-      <Edges color={EDGE_COLOR} />
+      {!mesh.glueGroup && <Edges color={EDGE_COLOR} />}
     </mesh>
   )
 }
 
-export function PanelMeshes({ meshes }: { meshes: readonly PanelMesh[] }) {
+function GlueBlockOutline({ block }: { block: GlueBlock }) {
+  const geometry = useMemo(() => {
+    const box = new BoxGeometry(...block.size)
+    const edges = new EdgesGeometry(box)
+    box.dispose()
+    return edges
+  }, [block.size])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return (
+    <lineSegments geometry={geometry} position={block.position}>
+      <lineBasicMaterial color={EDGE_COLOR} />
+    </lineSegments>
+  )
+}
+
+interface PanelMeshesProps {
+  meshes: readonly PanelMesh[]
+  blocks: readonly GlueBlock[]
+}
+
+export function PanelMeshes({ meshes, blocks }: PanelMeshesProps) {
   return (
     <>
       {meshes.map((mesh) => (
         <PanelMeshView key={mesh.id} mesh={mesh} />
+      ))}
+      {blocks.map((block) => (
+        <GlueBlockOutline key={block.id} block={block} />
       ))}
     </>
   )

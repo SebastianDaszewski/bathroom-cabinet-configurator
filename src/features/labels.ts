@@ -25,6 +25,11 @@ export const HANDLE_DRILLING_LABELS: Record<Config['handleDrilling'], string> = 
   double: 'Dwa uchwyty',
 }
 
+export const TOP_THICKENING_LABELS: Record<Config['topThickening'], string> = {
+  none: 'Standardowy 18 mm',
+  double: 'Pogrubiony 36 mm',
+}
+
 export const HANDLE_POSITION_LABELS: Record<Config['handlePosition'], string> = {
   'top-50': '50 mm od góry',
   center: 'Na środku',
@@ -42,12 +47,17 @@ const FIELD_LABELS: Record<string, string> = {
   width: 'Szerokość',
   height: 'Wysokość',
   depth: 'Głębokość',
+  topExtensionLeft: 'Wydłużenie blatu w lewo',
+  topExtensionRight: 'Wydłużenie blatu w prawo',
+  topExtensionFront: 'Wydłużenie blatu do przodu',
   carcassDecor: 'Dekor korpusu',
   frontDecor: 'Dekor frontów',
   drawerDecor: 'Dekor szuflad',
   'drawers.top.length': 'Górna szuflada',
   'drawers.bottom.length': 'Dolna szuflada',
   siphonX: 'Pozycja wycięcia',
+  siphonCutWidth: 'Szerokość wycięcia',
+  siphonCutDepth: 'Długość wycięcia',
   edgeHandleThickness: 'Grubość uchwytu krawędziowego',
   handleDrilling: 'Uchwyty',
   handleSpacing: 'Rozstaw uchwytu',

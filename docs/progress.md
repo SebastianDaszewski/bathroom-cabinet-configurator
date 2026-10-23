@@ -102,7 +102,30 @@ every milestone.
       (reference 1236.08), cut-out +44.43 PLN (reference +44.26),
       ≈ 0.38 PLN/mm width, ≈ 0.32 PLN/mm height. Checked in Chrome.
       284 tests.
-- [ ] 8. Summary, CSV export, responsive polish, deploy
+- [x] **8. Countertop** — gap found by comparing with the reference: the
+      carcass had only two top rails, but a countertop basin needs a top. Now a
+      full top panel lies on the carcass and covers the fronts
+      (`depth + 18 + 5` = 523 mm, as in the reference), with thickening (a
+      second board, 36 mm) and left / right (0–1800) / front (0–100)
+      extensions; R12 caps the length at one board (2800 mm). `cabinetBounds`
+      drives the scene centre, camera fit and invariants; a countertop length
+      guide appears when it is longer than the carcass. Prices recalibrated
+      (base labour 264 PLN): default 1235.92 PLN (reference 1236.08),
+      ≈ 0.43 PLN/mm width, ≈ 0.32 PLN/mm height. The thickened top first
+      looked like two loose boards (each panel outlined): boards now share a
+      `glueGroup`, the scene outlines the block once, and only the top board is
+      edge-banded (one wide band). Drawers also open individually by clicking
+      them in 3D, as in the reference (pointer cursor on hover; a drag of more
+      than 4 px orbits instead); the button toggles both;
+      the animation was slowed to ≈ 0.7 s. The siphon cut-out size became
+      configurable (owner's request): `siphonCutWidth` 120–300 (R8) and
+      `siphonCutDepth` 150–350 (new R13), defaults 164 × 270 from the
+      reference. "Zacznij od nowa" now asks for confirmation in a native
+      `<dialog>` (Escape / backdrop / "Anuluj" cancel), because it sits right
+      under "Kopiuj link". 311 tests.
+- [ ] 9. Grain direction, drawer-bottom decor, front prepared for an edge
+      handle (owner asked for all three after the reference comparison)
+- [ ] 10. Summary, CSV export, responsive polish, Playwright, deploy
 
 ## Repo
 

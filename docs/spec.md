@@ -16,6 +16,7 @@ assets or branding.
 ### MVP
 
 - Cabinet dimensions with constraints
+- Countertop (top panel) with thickening and left / right / front extensions
 - Materials and decors for carcass, fronts, drawer boxes
 - Two drawers: runner type, length, siphon cut-out
 - Fronts: standard / grip groove / edge handle; handle drilling
@@ -26,7 +27,6 @@ assets or branding.
 
 ### Later (only if time allows)
 
-- Top rail thickening and extensions (left / right / front)
 - Grain direction & continuous vertical grain across fronts
 - PDF export of the order summary
 - PBR textures, soft shadows, AR / screenshot
@@ -43,13 +43,17 @@ All lengths in millimetres (integers).
 
 ### 2.1 Carcass
 
-| Param          | Type     | Range / values                | Default     |
-| -------------- | -------- | ----------------------------- | ----------- |
-| `width`        | int      | 500–1200                      | 600         |
-| `height`       | int      | 400–600                       | 500         |
-| `depth`        | int      | 390–700                       | 500         |
-| `carcassBoard` | enum     | `chipboard`, `acrylic`, `mdf` | `chipboard` |
-| `carcassDecor` | decor id | see §2.5                      | `grey-u732` |
+| Param               | Type     | Range / values                   | Default     |
+| ------------------- | -------- | -------------------------------- | ----------- |
+| `width`             | int      | 500–1200                         | 600         |
+| `height`            | int      | 400–600                          | 500         |
+| `depth`             | int      | 390–700                          | 500         |
+| `carcassBoard`      | enum     | `chipboard`, `acrylic`, `mdf`    | `chipboard` |
+| `carcassDecor`      | decor id | see §2.5                         | `grey-u732` |
+| `topThickening`     | enum     | `none` (18 mm), `double` (36 mm) | `none`      |
+| `topExtensionLeft`  | int      | 0–1800 (R12)                     | 0           |
+| `topExtensionRight` | int      | 0–1800 (R12)                     | 0           |
+| `topExtensionFront` | int      | 0–100                            | 0           |
 
 ### 2.2 Drawers (exactly 2: `top`, `bottom`)
 
@@ -60,6 +64,8 @@ All lengths in millimetres (integers).
 | `drawer[i].length`    | enum     | 350, 400, 450                             | max allowed                   |
 | `drawer[i].siphonCut` | bool     | —                                         | `false` (as in the reference) |
 | `siphonPosition`      | enum     | `center`, `custom`                        | `center`                      |
+| `siphonCutWidth`      | int      | 120–300 (R8)                              | 164                           |
+| `siphonCutDepth`      | int      | 150–350, from the drawer back (R13)       | 270                           |
 | `siphonX`             | int      | cut-out centre from the left side (R11)   | 300                           |
 | `drawerDecor`         | decor id |                                           | `white-w960`                  |
 
@@ -101,10 +107,12 @@ Each rule lives in `domain/rules/` as a pure function and has unit tests.
 | R5  | `edge-handle`: each front height is reduced by `edgeHandleThickness`.                                                                                                                                               |
 | R6  | `handleSpacing` must be `<= width - 2*60` (handle fits on the front with margin); with `double` drilling each handle gets half the front: `<= width/2 - 2*60`. Options above the limit are disabled.                |
 | R7  | `double` handle drilling requires `width >= 800`.                                                                                                                                                                   |
-| R8  | (removed) The siphon cut-out has a fixed size taken from the reference: 164 × 270 mm. Its position is covered by R11.                                                                                               |
+| R8  | `siphonCutWidth` (120–300, default 164 as in the reference) must leave ≥ 60 mm of drawer side on each side: `siphonCutWidth <= width - 2*(18 + 60)`.                                                                |
 | R9  | A decor may only be selected for a board type it supports; changing the board resets an incompatible decor to the first compatible one.                                                                             |
 | R10 | Drawer front heights: the inner front gap is 3 mm, the two fronts split the height equally: `frontH = (height - 3) / 2` (minus R5).                                                                                 |
-| R11 | With `siphonPosition = custom`, `siphonX` (cut-out centre from the left outer side) is clamped so the cut-out keeps ≥ 60 mm of drawer side on each side: `18 + 60 + 164/2 <= siphonX <= width - (18 + 60 + 164/2)`. |
+| R11 | With `siphonPosition = custom`, `siphonX` (cut-out centre from the left outer side) is clamped so the cut-out keeps the R8 margin: `18 + 60 + siphonCutWidth/2 <= siphonX <= width - (18 + 60 + siphonCutWidth/2)`. |
+| R12 | The countertop (`width + topExtensionLeft + topExtensionRight`) is at most 2800 mm long (one board); the excess is trimmed from the right extension first, then the left.                                           |
+| R13 | `siphonCutDepth` (150–350, default 270 as in the reference) must leave ≥ 60 mm of drawer bottom in front of the cut-out, for every drawer that has one: `siphonCutDepth <= drawer.length - 10 - 60`.                |
 
 Resolutions: in R4 the opening / front type wins and `handleDrilling` resets to
 `none`; in R6 the spacing falls back to the largest multiple of 32 that fits; in
@@ -126,21 +134,24 @@ scene and the cut list (geometry and production list can never diverge).
 
 Assumptions: board thickness `t = 18`, drawer board 16 mm, fronts overlay the
 carcass with 2 mm gaps at the sides. No back panel: a vanity under a basin is
-open at the back so the siphon can be connected to the wall pipes; the back top
-rail keeps the carcass rigid.
+open at the back so the siphon can be connected to the wall pipes. The
+countertop lies on the carcass (`height` is the carcass under it, as in the
+reference: 18 mm + 500 mm) and covers the fronts: its depth is `depth + 18 + 5`
+(523 mm at depth 500, as in the reference). The 3D view and camera fit the
+whole cabinet including the countertop.
 Drawer box height = front height − 70; the box sits 25 mm above its front's lower
 edge. All construction constants live in `domain/constants.ts`.
 
-| Panel            | Qty | Length × Width                                               | Material | Edge banding |
-| ---------------- | --- | ------------------------------------------------------------ | -------- | ------------ |
-| Side             | 2   | `height` × `depth`                                           | carcass  | front edge   |
-| Bottom           | 1   | `width - 2t` × `depth`                                       | carcass  | front edge   |
-| Top rail (front) | 1   | `width - 2t` × 100                                           | carcass  | front edge   |
-| Top rail (back)  | 1   | `width - 2t` × 100                                           | carcass  | —            |
-| Drawer front     | 2   | `width - 4` × `frontH`                                       | front    | all 4        |
-| Drawer bottom    | 2   | `width - 2t - runner.bottomDeduction` × `drawer.length - 10` | drawer   | —            |
-| Drawer back      | 2   | `width - 2t - runner.backDeduction` × box height − 16        | drawer   | top          |
-| Drawer side      | 4   | `drawer.length` × box height (tandem only)                   | drawer   | top          |
+| Panel            | Qty | Length × Width                                               | Material | Edge banding                                    |
+| ---------------- | --- | ------------------------------------------------------------ | -------- | ----------------------------------------------- |
+| Side             | 2   | `height` × `depth`                                           | carcass  | front edge                                      |
+| Bottom           | 1   | `width - 2t` × `depth`                                       | carcass  | front edge                                      |
+| Top (countertop) | 1   | `width + extLeft + extRight` × `depth + 18 + 5 + extFront`   | carcass  | front + both ends                               |
+| Top thickening   | 0–1 | same as the top, glued underneath (`topThickening = double`) | carcass  | — (one wide band on the top covers both boards) |
+| Drawer front     | 2   | `width - 4` × `frontH`                                       | front    | all 4                                           |
+| Drawer bottom    | 2   | `width - 2t - runner.bottomDeduction` × `drawer.length - 10` | drawer   | —                                               |
+| Drawer back      | 2   | `width - 2t - runner.backDeduction` × box height − 16        | drawer   | top                                             |
+| Drawer side      | 4   | `drawer.length` × box height (tandem only)                   | drawer   | top                                             |
 
 Runner specs (assumed): `blum` — metal sides, bottom −75, back −87; `tandem` —
 wooden 16 mm sides with 5 mm clearance each, bottom and back −42.
@@ -149,7 +160,9 @@ wooden 16 mm sides with 5 mm clearance each, bottom and back −42.
 `side-right`); the cut list merges identical pieces into rows with a quantity.
 
 `Panel` = `{ id, name, material, board, decor, length, width, thickness,
-edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[], drawer }`; `drawer`
+edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[], drawer, glueGroup }`;
+`glueGroup` marks boards glued into one block (the thickened countertop): the
+3D view outlines the block once instead of each board. `drawer`
 is `top` / `bottom` for fronts and drawer boxes (they move together when the
 drawers are opened in 3D), `null` otherwise.
 
@@ -162,9 +175,9 @@ drawers are opened in 3D), `null` otherwise.
   width, from the panel's minimum corner): handle holes Ø5 (two per handle,
   `handleSpacing` apart, at the front's centre or 50 mm from its top).
 - Siphon cut-out (as in the reference): the drawer bottom stays whole; the
-  drawer back has a 164 mm gap through its full height for the pipe, so it is
+  drawer back has a gap of `siphonCutWidth` through its full height for the pipe, so it is
   made of two pieces (left / right, rounded to whole mm, so the gap may sit up to
-  0.5 mm off the requested centre). A shallow plastic tray (164 × 270 mm,
+  0.5 mm off the requested centre). A plastic tray (`siphonCutWidth` × `siphonCutDepth`,
   rounded front corners, 2 mm walls, 60 mm high, open at the back) sits on the
   bottom in front of the gap. The tray is hardware: drawn in 3D, not in the cut
   list, priced with the siphon cut-out (machining).
@@ -215,7 +228,8 @@ machining / labour).
 - Left: stepper with tabs — **Dimensions → Materials & colours → Drawers →
   Fronts & handles → Summary**. Each numeric field = slider + number input.
 - Centre: 3D view (orbit controls, dimension labels for W/H/D, camera reset,
-  toggle "open drawers" to show siphon cut-outs).
+  toggle "open drawers" to show siphon cut-outs; each drawer also opens and
+  closes when clicked).
 - Right / bottom on mobile: price, breakdown, warnings from rules,
   buttons: _Copy link_, _Export cut list (CSV)_.
 - Responsive down to 375 px; 3D view on top on mobile.
@@ -236,7 +250,7 @@ machining / labour).
 src/
   domain/          # pure TS, no React/Three — fully unit-tested
     schema.ts      # Zod schema + Config type + defaults
-    rules/         # R1–R11, normalize(config) → { config, adjustments }
+    rules/         # R1–R12, normalize(config) → { config, adjustments }
     panels.ts      # buildPanels(config) → Panel[]
     pricing.ts     # price(config, panels) → { total, lines }
     cutlist.ts     # panels → rows, CSV
@@ -268,4 +282,6 @@ Principles:
 5. 3D scene from panels (carcass, fronts, drawers, labels)
 6. Stepper UI + store + URL sync
 7. Cut-outs & handles in 3D, open-drawers toggle
-8. Summary, CSV export, responsive polish, deploy
+8. Countertop: top panel, thickening, extensions (R12)
+9. Grain direction, drawer-bottom decor, front prepared for an edge handle
+10. Summary, CSV export, responsive polish, Playwright, deploy

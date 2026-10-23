@@ -1,9 +1,15 @@
 import { RUNNERS } from '../../domain/catalog'
-import { DRAWER_DEPTH_CLEARANCE, SIPHON_CUT_DEPTH, SIPHON_CUT_WIDTH } from '../../domain/constants'
-import { allowedDrawerLengths, siphonXRange } from '../../domain/rules'
+import { DRAWER_DEPTH_CLEARANCE } from '../../domain/constants'
+import {
+  allowedDrawerLengths,
+  maxSiphonCutDepth,
+  maxSiphonCutWidth,
+  siphonXRange,
+} from '../../domain/rules'
 import {
   DRAWER_IDS,
   DRAWER_LENGTHS,
+  LIMITS,
   OPENING_TYPES,
   SIPHON_POSITIONS,
   type DrawerId,
@@ -31,7 +37,7 @@ export function DrawersStep() {
       ? `Szuflada ${blocked[0]} mm wymaga głębokości min. ${blocked[0] + DRAWER_DEPTH_CLEARANCE} mm.`
       : null
   const hasSiphonCut = DRAWER_IDS.some((id) => config.drawers[id].siphonCut)
-  const xRange = siphonXRange(config.width)
+  const xRange = siphonXRange(config)
 
   return (
     <>
@@ -70,7 +76,7 @@ export function DrawersStep() {
           />
           <Toggle
             label="Wycięcie pod syfon"
-            hint={`Osłona ${SIPHON_CUT_WIDTH} × ${SIPHON_CUT_DEPTH} mm przy tylnej ściance, która ma przerwę na rurę.`}
+            hint="Osłona przy tylnej ściance, która ma przerwę na rurę."
             checked={config.drawers[id].siphonCut}
             onChange={(siphonCut) => updateDrawer(id, { siphonCut })}
           />
@@ -80,6 +86,21 @@ export function DrawersStep() {
       {hasSiphonCut && (
         <section className="step-group">
           <h3 className="step-group-title">Wycięcie pod syfon</h3>
+          <NumberField
+            label="Szerokość wycięcia"
+            value={config.siphonCutWidth}
+            min={LIMITS.siphonCutWidth.min}
+            max={maxSiphonCutWidth(config.width)}
+            onChange={(siphonCutWidth) => update({ siphonCutWidth })}
+          />
+          <NumberField
+            label="Długość wycięcia"
+            value={config.siphonCutDepth}
+            min={LIMITS.siphonCutDepth.min}
+            max={maxSiphonCutDepth(config)}
+            hint="Mierzona od tylnej ścianki szuflady w stronę frontu."
+            onChange={(siphonCutDepth) => update({ siphonCutDepth })}
+          />
           <ChoiceField
             label="Położenie"
             value={config.siphonPosition}

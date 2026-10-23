@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest'
 import { buildPanels } from '../domain/panels'
 import { normalize } from '../domain/rules'
 import { DEFAULT_CONFIG, type Config } from '../domain/schema'
+import { cabinetCentre } from './geometry'
 import {
+  CLOSED_DRAWERS,
   drawerOffsets,
   GROOVE_COLOR,
   hardwareItems,
@@ -10,6 +12,7 @@ import {
   HANDLE_STANDOFF,
   METAL_COLOR,
   METAL_SIDE_THICKNESS,
+  toggleAllDrawers,
   TRAY_COLOR,
   trayFloorOutline,
   trayWallOutline,
@@ -17,6 +20,8 @@ import {
 
 const config = (overrides: Partial<Config> = {}): Config =>
   normalize({ ...DEFAULT_CONFIG, ...overrides }).config
+
+const centre = cabinetCentre(DEFAULT_CONFIG)
 
 const itemsFor = (input: Config) => hardwareItems(input, buildPanels(input))
 
@@ -45,8 +50,8 @@ describe('hardwareItems', () => {
     if (bar.shape !== 'cylinder') throw new Error('expected a cylinder')
 
     expect(bar.position[0]).toBeCloseTo(0)
-    expect(bar.position[1]).toBeCloseTo((251 + 124.5 - 250) / 1000)
-    expect(bar.position[2]).toBeCloseTo((518 + HANDLE_STANDOFF - 250) / 1000)
+    expect(bar.position[1]).toBeCloseTo((251 + 124.5 - centre.y) / 1000)
+    expect(bar.position[2]).toBeCloseTo((518 + HANDLE_STANDOFF - centre.z) / 1000)
     expect(bar.length).toBeCloseTo((128 + 2 * HANDLE_OVERHANG) / 1000)
     expect(bar).toMatchObject({ axis: 'x', drawer: 'top', color: METAL_COLOR })
     expect(left.position[0]).toBeCloseTo(-0.064)
@@ -67,7 +72,7 @@ describe('hardwareItems', () => {
 
     expect(items).toHaveLength(2)
     expect(top.size).toEqual([0.596, 0.004, 0.018])
-    expect(top.position[1]).toBeCloseTo((251 + 245 + 2 - 250) / 1000)
+    expect(top.position[1]).toBeCloseTo((251 + 245 + 2 - centre.y) / 1000)
   })
 
   it('marks the grip groove at the top of each front', () => {
@@ -136,10 +141,17 @@ describe('siphon tray', () => {
     const gapStart = left.position.x - left.size.x / 2 + left.length
     const bottomTop = bottom.position.y + bottom.size.y / 2
     const rear = bottom.position.z - bottom.size.z / 2
-    expect(tray.position[0]).toBeCloseTo((gapStart - 300) / 1000)
-    expect(tray.position[1]).toBeCloseTo((bottomTop - 250) / 1000)
-    expect(tray.position[2]).toBeCloseTo((rear - 250) / 1000)
+    expect(tray.position[0]).toBeCloseTo((gapStart - centre.x) / 1000)
+    expect(tray.position[1]).toBeCloseTo((bottomTop - centre.y) / 1000)
+    expect(tray.position[2]).toBeCloseTo((rear - centre.z) / 1000)
     expect(tray).toMatchObject({ drawer: 'top', color: TRAY_COLOR, metal: false })
+  })
+
+  it('takes its size from the configured cut-out', () => {
+    const [tray] = trays({ ...withCut, siphonCutWidth: 200, siphonCutDepth: 300 })
+    if (tray.shape !== 'tray') throw new Error('expected a tray')
+    expect(Math.max(...tray.floor.map(([u]) => u))).toBeCloseTo(0.2)
+    expect(Math.max(...tray.floor.map(([, v]) => v))).toBeCloseTo(0.3)
   })
 
   it('has a floor with rounded front corners and square back corners', () => {
@@ -166,13 +178,28 @@ describe('siphon tray', () => {
 
 describe('drawerOffsets', () => {
   it('keeps closed drawers in place', () => {
-    expect(drawerOffsets(config(), false)).toEqual({ top: 0, bottom: 0 })
+    expect(drawerOffsets(config(), CLOSED_DRAWERS)).toEqual({ top: 0, bottom: 0 })
   })
 
   it('pulls open drawers out by three quarters of their length', () => {
     const input = config({
       drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 350, siphonCut: false } },
     })
-    expect(drawerOffsets(input, true)).toEqual({ top: 0.338, bottom: 0.263 })
+    expect(drawerOffsets(input, { top: true, bottom: true })).toEqual({ top: 0.338, bottom: 0.263 })
+  })
+
+  it('opens drawers one at a time', () => {
+    expect(drawerOffsets(config(), { top: false, bottom: true })).toEqual({ top: 0, bottom: 0.338 })
+  })
+})
+
+describe('toggleAllDrawers', () => {
+  it('opens both when all are closed', () => {
+    expect(toggleAllDrawers(CLOSED_DRAWERS)).toEqual({ top: true, bottom: true })
+  })
+
+  it('closes both when any is open', () => {
+    expect(toggleAllDrawers({ top: true, bottom: false })).toEqual({ top: false, bottom: false })
+    expect(toggleAllDrawers({ top: true, bottom: true })).toEqual({ top: false, bottom: false })
   })
 })

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_CONFIG } from '../domain/schema'
-import { cameraDistance, cameraPosition, dimensionGuides, ndcToScreen, toMetres } from './geometry'
+import {
+  cabinetCentre,
+  cameraDistance,
+  cameraPosition,
+  dimensionGuides,
+  ndcToScreen,
+  toMetres,
+} from './geometry'
 
 describe('toMetres', () => {
   it('converts millimetres to metres', () => {
@@ -8,7 +15,16 @@ describe('toMetres', () => {
   })
 })
 
+describe('cabinetCentre', () => {
+  it('centres the whole cabinet including the countertop', () => {
+    expect(cabinetCentre(DEFAULT_CONFIG)).toEqual({ x: 300, y: 259, z: 261.5 })
+    expect(cabinetCentre({ ...DEFAULT_CONFIG, topExtensionLeft: 200 }).x).toBe(200)
+  })
+})
+
 describe('dimensionGuides', () => {
+  const centre = cabinetCentre(DEFAULT_CONFIG)
+
   const guides = dimensionGuides(DEFAULT_CONFIG)
   const guide = (id: string) => guides.find((candidate) => candidate.id === id)
 
@@ -26,13 +42,22 @@ describe('dimensionGuides', () => {
   })
 
   it('places guides outside the cabinet', () => {
-    expect(guide('width')?.from[1]).toBeCloseTo(-0.31)
+    expect(guide('width')?.from[1]).toBeCloseTo((-60 - centre.y) / 1000)
     expect(guide('height')?.from[0]).toBeCloseTo(-0.36)
     expect(guide('depth')?.from[0]).toBeCloseTo(0.36)
   })
 
+  it('adds the countertop length when it is longer than the carcass', () => {
+    expect(guides.some((candidate) => candidate.id === 'top')).toBe(false)
+    const extended = dimensionGuides({ ...DEFAULT_CONFIG, topExtensionRight: 400 })
+    expect(extended.find((candidate) => candidate.id === 'top')?.label).toBe('1000 mm')
+  })
+
   it('puts the label in the middle of the guide', () => {
-    expect(guide('width')?.labelPosition).toEqual([0, -0.31, 0.25])
+    const [x, y, z] = guide('width')?.labelPosition ?? []
+    expect(x).toBeCloseTo(0)
+    expect(y).toBeCloseTo((-60 - centre.y) / 1000)
+    expect(z).toBeCloseTo((500 - centre.z) / 1000)
   })
 })
 

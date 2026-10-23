@@ -1,11 +1,12 @@
 import { findDecor } from '../domain/catalog'
-import type { Panel, Vec3 } from '../domain/panels'
+import { cabinetBounds, type Panel, type Vec3 } from '../domain/panels'
+import { topLength } from '../domain/rules'
 import type { Config } from '../domain/schema'
 
 export type Vec3Tuple = [number, number, number]
 
 export interface DimensionGuide {
-  id: 'width' | 'height' | 'depth'
+  id: 'width' | 'height' | 'depth' | 'top'
   from: Vec3Tuple
   to: Vec3Tuple
   label: string
@@ -23,7 +24,8 @@ export function toMetres(mm: number): number {
 }
 
 export function cabinetCentre(config: Config): Vec3 {
-  return { x: config.width / 2, y: config.height / 2, z: config.depth / 2 }
+  const { min, max } = cabinetBounds(config)
+  return { x: (min.x + max.x) / 2, y: (min.y + max.y) / 2, z: (min.z + max.z) / 2 }
 }
 
 export function toScene(point: Vec3, centre: Vec3): Vec3Tuple {
@@ -49,10 +51,22 @@ export function dimensionGuides(config: Config): DimensionGuide[] {
     ),
   })
 
-  return [
+  const guides = [
     guide('width', { x: 0, y: -o, z: depth }, { x: width, y: -o, z: depth }, width),
     guide('height', { x: -o, y: 0, z: depth }, { x: -o, y: height, z: depth }, height),
     guide('depth', { x: width + o, y: -o, z: 0 }, { x: width + o, y: -o, z: depth }, depth),
+  ]
+  if (topLength(config) === width) return guides
+
+  const { min, max } = cabinetBounds(config)
+  return [
+    ...guides,
+    guide(
+      'top',
+      { x: min.x, y: max.y + o, z: max.z },
+      { x: max.x, y: max.y + o, z: max.z },
+      topLength(config),
+    ),
   ]
 }
 
@@ -68,8 +82,9 @@ export function ndcToScreen(
 }
 
 export function cameraDistance(config: Config, fov = CAMERA_FOV): number {
+  const { min, max } = cabinetBounds(config)
   const radius =
-    toMetres(Math.hypot(config.width, config.height, config.depth) + 2 * GUIDE_OFFSET) / 2
+    toMetres(Math.hypot(max.x - min.x, max.y - min.y, max.z - min.z) + 2 * GUIDE_OFFSET) / 2
   return (radius / Math.sin(((fov / 2) * Math.PI) / 180)) * CAMERA_PADDING
 }
 

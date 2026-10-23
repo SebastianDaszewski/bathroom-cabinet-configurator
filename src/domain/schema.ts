@@ -6,6 +6,11 @@ export const LIMITS = {
   depth: { min: 390, max: 700, step: 1 },
   edgeHandleThickness: { min: 1, max: 4, step: 1 },
   handleSpacing: { min: 32, max: 480, step: 32 },
+  siphonCutWidth: { min: 120, max: 300, step: 1 },
+  siphonCutDepth: { min: 150, max: 350, step: 1 },
+  topExtensionLeft: { min: 0, max: 1800, step: 1 },
+  topExtensionRight: { min: 0, max: 1800, step: 1 },
+  topExtensionFront: { min: 0, max: 100, step: 1 },
 } as const
 
 export type LimitedField = keyof typeof LIMITS
@@ -20,6 +25,7 @@ export const FRONT_TYPES = ['standard', 'grip-groove', 'edge-handle'] as const
 export const HANDLE_DRILLINGS = ['none', 'single', 'double'] as const
 export const HANDLE_POSITIONS = ['top-50', 'center'] as const
 export const DRAWER_IDS = ['top', 'bottom'] as const
+export const TOP_THICKENINGS = ['none', 'double'] as const
 
 export type BoardType = (typeof BOARD_TYPES)[number]
 export type RunnerType = (typeof RUNNER_TYPES)[number]
@@ -37,11 +43,17 @@ export const ConfigSchema = z.object({
   depth: z.number(),
   carcassBoard: z.enum(CARCASS_BOARD_TYPES),
   carcassDecor: z.string(),
+  topThickening: z.enum(TOP_THICKENINGS),
+  topExtensionLeft: z.number(),
+  topExtensionRight: z.number(),
+  topExtensionFront: z.number(),
 
   runner: z.enum(RUNNER_TYPES),
   opening: z.enum(OPENING_TYPES),
   drawers: z.object({ top: DrawerSchema, bottom: DrawerSchema }),
   siphonPosition: z.enum(SIPHON_POSITIONS),
+  siphonCutWidth: z.number(),
+  siphonCutDepth: z.number(),
   siphonX: z.number(),
   drawerDecor: z.string(),
 
@@ -64,6 +76,10 @@ export const DEFAULT_CONFIG: Config = {
   depth: 500,
   carcassBoard: 'chipboard',
   carcassDecor: 'grey-u732',
+  topThickening: 'none',
+  topExtensionLeft: 0,
+  topExtensionRight: 0,
+  topExtensionFront: 0,
 
   runner: 'blum',
   opening: 'blumotion',
@@ -72,6 +88,8 @@ export const DEFAULT_CONFIG: Config = {
     bottom: { length: 450, siphonCut: false },
   },
   siphonPosition: 'center',
+  siphonCutWidth: 164,
+  siphonCutDepth: 270,
   siphonX: 300,
   drawerDecor: 'white-w960',
 
