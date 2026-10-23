@@ -18,6 +18,10 @@ export interface Decor {
 export interface Runner {
   id: RunnerType
   name: string
+  woodenSides: boolean
+  sideClearance: number
+  bottomDeduction: number
+  backDeduction: number
 }
 
 export const BOARDS: readonly Board[] = [
@@ -97,9 +101,27 @@ export const DECORS: readonly Decor[] = [
 ]
 
 export const RUNNERS: readonly Runner[] = [
-  { id: 'tandem', name: 'Concealed runners (Tandem)' },
-  { id: 'blum', name: 'Metal drawer box (Blum)' },
+  {
+    id: 'tandem',
+    name: 'Concealed runners (Tandem)',
+    woodenSides: true,
+    sideClearance: 5,
+    bottomDeduction: 42,
+    backDeduction: 42,
+  },
+  {
+    id: 'blum',
+    name: 'Metal drawer box (Blum)',
+    woodenSides: false,
+    sideClearance: 0,
+    bottomDeduction: 75,
+    backDeduction: 87,
+  },
 ]
+
+export function findRunner(id: RunnerType): Runner {
+  return RUNNERS.find((runner) => runner.id === id) ?? RUNNERS[0]
+}
 
 export function findDecor(id: string): Decor | undefined {
   return DECORS.find((decor) => decor.id === id)

@@ -43,7 +43,17 @@ every milestone.
       largest multiple of 32 that fits; R8 is dormant with the current ranges
       (limit ≥ 344 vs. max 236), kept as a guard; drawer boxes are always
       chipboard; adjustment reasons in English.
-- [ ] 3. Panels + cut list + tests
+- [x] **3. Panels + cut list** — `panels.ts` (`buildPanels` → one axis-aligned
+      `Panel` per piece, centre + size in mm, cut-outs in panel coordinates),
+      `cutlist.ts` (merge identical pieces, CSV with `;` + BOM). Runner specs in
+      the catalogue, new construction constants. 199 tests incl. invariants
+      over 72 configs: integer sizes, everything inside the cabinet, no
+      overlapping panels, holes and notches inside their panel.
+      Decisions: tandem drawers get wooden sides; new `siphonX` + rule R11 for
+      a custom cut-out position; R6 extended — with `double` drilling each
+      handle gets half the front (`width/2 - 120`), otherwise holes would land
+      outside the front. Drawer box sizes, runner deductions and siphon notch
+      depth are our assumptions.
 - [ ] 4. Pricing + tests
 - [ ] 5. 3D scene from panels
 - [ ] 6. Stepper UI + store + URL sync
