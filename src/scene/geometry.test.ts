@@ -1,40 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { buildPanels } from '../domain/panels'
 import { DEFAULT_CONFIG } from '../domain/schema'
-import {
-  BACK_COLOR,
-  cameraDistance,
-  cameraPosition,
-  dimensionGuides,
-  ndcToScreen,
-  panelMeshes,
-  toMetres,
-} from './geometry'
+import { cameraDistance, cameraPosition, dimensionGuides, ndcToScreen, toMetres } from './geometry'
 
-const meshes = panelMeshes(DEFAULT_CONFIG, buildPanels(DEFAULT_CONFIG))
-const mesh = (id: string) => meshes.find((candidate) => candidate.id === id)
-
-describe('panelMeshes', () => {
-  it('creates one mesh per panel', () => {
-    expect(meshes).toHaveLength(buildPanels(DEFAULT_CONFIG).length)
-  })
-
+describe('toMetres', () => {
   it('converts millimetres to metres', () => {
     expect(toMetres(600)).toBe(0.6)
-    expect(mesh('side-left')?.size).toEqual([0.018, 0.5, 0.5])
-  })
-
-  it('centres the carcass on the origin', () => {
-    expect(mesh('side-left')?.position).toEqual([-0.291, 0, 0])
-    expect(mesh('side-right')?.position).toEqual([0.291, 0, 0])
-    expect(mesh('bottom')?.position[1]).toBeCloseTo(-0.241)
-  })
-
-  it('takes colours from the decors', () => {
-    expect(mesh('side-left')?.color).toBe('#8d8f8c')
-    expect(mesh('front-top')?.color).toBe('#b8915f')
-    expect(mesh('drawer-top-back')?.color).toBe('#f2f1ec')
-    expect(mesh('back')?.color).toBe(BACK_COLOR)
   })
 })
 

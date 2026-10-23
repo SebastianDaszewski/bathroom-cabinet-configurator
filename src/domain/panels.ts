@@ -1,6 +1,5 @@
 import { DRAWER_BOARD, findRunner } from './catalog'
 import {
-  BACK_THICKNESS,
   BOARD_THICKNESS,
   DRAWER_BOARD_THICKNESS,
   DRAWER_BOTTOM_SHORTENING,
@@ -10,8 +9,7 @@ import {
   FRONT_GAP,
   HANDLE_HOLE_DIAMETER,
   HANDLE_TOP_OFFSET,
-  SIPHON_BACK_STRIP,
-  SIPHON_CUT_DEPTH,
+  SIPHON_CUT_WIDTH,
   TOP_RAIL_WIDTH,
 } from './constants'
 import { frontHeights, siphonCenter } from './rules'
@@ -25,7 +23,7 @@ export interface Vec3 {
   z: number
 }
 
-export type PanelMaterial = 'carcass' | 'back' | 'front' | 'drawer'
+export type PanelMaterial = 'carcass' | 'front' | 'drawer'
 
 export interface Edges {
   l1: boolean
@@ -34,16 +32,19 @@ export interface Edges {
   w2: boolean
 }
 
-export type Cutout =
-  | { kind: 'hole'; u: number; v: number; diameter: number }
-  | { kind: 'notch'; u: number; v: number; length: number; width: number }
+export interface Cutout {
+  kind: 'hole'
+  u: number
+  v: number
+  diameter: number
+}
 
 export interface Panel {
   id: string
   name: string
   material: PanelMaterial
-  board: BoardType | 'hdf'
-  decor: string | null
+  board: BoardType
+  decor: string
   length: number
   width: number
   thickness: number
@@ -52,10 +53,12 @@ export interface Panel {
   position: Vec3
   size: Vec3
   cutouts: Cutout[]
+  drawer: DrawerId | null
 }
 
-type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges'> & {
+type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer'> & {
   min: Vec3
+  drawer?: DrawerId
   edges?: Partial<Edges>
   cutouts?: Cutout[]
 }
@@ -63,7 +66,7 @@ type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges'> & {
 const NO_EDGES: Edges = { l1: false, l2: false, w1: false, w2: false }
 const ALL_EDGES: Edges = { l1: true, l2: true, w1: true, w2: true }
 
-function place({ min, edges = {}, cutouts = [], ...panel }: PanelSpec): Panel {
+function place({ min, edges = {}, cutouts = [], drawer, ...panel }: PanelSpec): Panel {
   const size: Vec3 = { x: 0, y: 0, z: 0 }
   size[panel.axes[0]] = panel.length
   size[panel.axes[1]] = panel.width
@@ -75,6 +78,7 @@ function place({ min, edges = {}, cutouts = [], ...panel }: PanelSpec): Panel {
     size,
     position: { x: min.x + size.x / 2, y: min.y + size.y / 2, z: min.z + size.z / 2 },
     cutouts,
+    drawer: drawer ?? null,
   }
 }
 
@@ -135,18 +139,6 @@ function carcassPanels(config: Config): Panel[] {
       axes: ['x', 'z', 'y'],
       min: { x: t, y: height - t, z: 0 },
     }),
-    place({
-      id: 'back',
-      name: 'Plecy',
-      material: 'back',
-      board: 'hdf',
-      decor: null,
-      length: width - 2,
-      width: height - 2,
-      thickness: BACK_THICKNESS,
-      axes: ['x', 'y', 'z'],
-      min: { x: 1, y: 1, z: -BACK_THICKNESS },
-    }),
   ]
 }
 
@@ -183,6 +175,7 @@ function frontPanels(config: Config): Panel[] {
   return DRAWER_IDS.map((id) =>
     place({
       id: `front-${id}`,
+      drawer: id,
       name: 'Front szuflady',
       material: 'front',
       board: config.frontBoard,
@@ -206,60 +199,58 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
   const base = frontBottoms(config)[id] + DRAWER_BOX_LIFT
   const rear = config.depth - drawer.length
   const dt = DRAWER_BOARD_THICKNESS
-  const material = { material: 'drawer', board: DRAWER_BOARD, decor: config.drawerDecor } as const
+  const material = {
+    material: 'drawer',
+    board: DRAWER_BOARD,
+    decor: config.drawerDecor,
+    drawer: id,
+  } as const
 
   const bottomLength = inner - runner.bottomDeduction
   const bottomMinX = (config.width - bottomLength) / 2
   const backLength = inner - runner.backDeduction
   const backMinX = (config.width - backLength) / 2
   const backHeight = boxHeight - dt
-  const siphonX = siphonCenter(config)
-  const cutWidth = config.siphonOffset
 
-  const panels = [
+  const bottom = place({
+    ...material,
+    id: `drawer-${id}-bottom`,
+    name: 'Dno szuflady',
+    length: bottomLength,
+    width: drawer.length - DRAWER_BOTTOM_SHORTENING,
+    thickness: dt,
+    axes: ['x', 'z', 'y'],
+    min: { x: bottomMinX, y: base, z: rear },
+  })
+
+  const back = (key: string, length: number, x: number) =>
     place({
       ...material,
-      id: `drawer-${id}-bottom`,
-      name: 'Dno szuflady',
-      length: bottomLength,
-      width: drawer.length - DRAWER_BOTTOM_SHORTENING,
-      thickness: dt,
-      axes: ['x', 'z', 'y'],
-      min: { x: bottomMinX, y: base, z: rear },
-      cutouts: drawer.siphonCut
-        ? [
-            {
-              kind: 'notch',
-              u: siphonX - cutWidth / 2 - bottomMinX,
-              v: 0,
-              length: cutWidth,
-              width: SIPHON_CUT_DEPTH,
-            },
-          ]
-        : [],
-    }),
-    place({
-      ...material,
-      id: `drawer-${id}-back`,
+      id: `drawer-${id}-${key}`,
       name: 'Tył szuflady',
-      length: backLength,
+      length,
       width: backHeight,
       thickness: dt,
       axes: ['x', 'y', 'z'],
-      min: { x: backMinX, y: base + dt, z: rear },
+      min: { x, y: base + dt, z: rear },
       edges: { l1: true },
-      cutouts: drawer.siphonCut
-        ? [
-            {
-              kind: 'notch',
-              u: siphonX - cutWidth / 2 - backMinX,
-              v: SIPHON_BACK_STRIP,
-              length: cutWidth,
-              width: backHeight - SIPHON_BACK_STRIP,
-            },
-          ]
-        : [],
-    }),
+    })
+
+  const splitBack = (): Panel[] => {
+    const leftLength = Math.round(siphonCenter(config) - SIPHON_CUT_WIDTH / 2 - backMinX)
+    return [
+      back('back-left', leftLength, backMinX),
+      back(
+        'back-right',
+        backLength - SIPHON_CUT_WIDTH - leftLength,
+        backMinX + leftLength + SIPHON_CUT_WIDTH,
+      ),
+    ]
+  }
+
+  const panels = [
+    bottom,
+    ...(drawer.siphonCut ? splitBack() : [back('back', backLength, backMinX)]),
   ]
 
   if (!runner.woodenSides) return panels

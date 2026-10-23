@@ -27,7 +27,7 @@ describe('R3 applyDrawerLengths', () => {
   it('falls back to the largest allowed length for every drawer', () => {
     const result = applyDrawerLengths(withDepth(450))
 
-    expect(result.config.drawers.top).toEqual({ length: 400, siphonCut: true })
+    expect(result.config.drawers.top).toEqual({ length: 400, siphonCut: false })
     expect(result.config.drawers.bottom).toEqual({ length: 400, siphonCut: false })
     expect(result.adjustments).toEqual([
       expect.objectContaining({ rule: 'R3', field: 'drawers.top.length', from: 450, to: 400 }),

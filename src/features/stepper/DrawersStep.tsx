@@ -1,10 +1,9 @@
 import { RUNNERS } from '../../domain/catalog'
-import { DRAWER_DEPTH_CLEARANCE } from '../../domain/constants'
-import { allowedDrawerLengths, maxSiphonOffset, siphonXRange } from '../../domain/rules'
+import { DRAWER_DEPTH_CLEARANCE, SIPHON_CUT_DEPTH, SIPHON_CUT_WIDTH } from '../../domain/constants'
+import { allowedDrawerLengths, siphonXRange } from '../../domain/rules'
 import {
   DRAWER_IDS,
   DRAWER_LENGTHS,
-  LIMITS,
   OPENING_TYPES,
   SIPHON_POSITIONS,
   type DrawerId,
@@ -32,7 +31,7 @@ export function DrawersStep() {
       ? `Szuflada ${blocked[0]} mm wymaga głębokości min. ${blocked[0] + DRAWER_DEPTH_CLEARANCE} mm.`
       : null
   const hasSiphonCut = DRAWER_IDS.some((id) => config.drawers[id].siphonCut)
-  const xRange = siphonXRange(config)
+  const xRange = siphonXRange(config.width)
 
   return (
     <>
@@ -71,6 +70,7 @@ export function DrawersStep() {
           />
           <Toggle
             label="Wycięcie pod syfon"
+            hint={`Osłona ${SIPHON_CUT_WIDTH} × ${SIPHON_CUT_DEPTH} mm przy tylnej ściance, która ma przerwę na rurę.`}
             checked={config.drawers[id].siphonCut}
             onChange={(siphonCut) => updateDrawer(id, { siphonCut })}
           />
@@ -80,13 +80,6 @@ export function DrawersStep() {
       {hasSiphonCut && (
         <section className="step-group">
           <h3 className="step-group-title">Wycięcie pod syfon</h3>
-          <NumberField
-            label="Szerokość wycięcia"
-            value={config.siphonOffset}
-            min={LIMITS.siphonOffset.min}
-            max={maxSiphonOffset(config.width)}
-            onChange={(siphonOffset) => update({ siphonOffset })}
-          />
           <ChoiceField
             label="Położenie"
             value={config.siphonPosition}

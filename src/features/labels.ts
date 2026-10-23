@@ -47,7 +47,6 @@ const FIELD_LABELS: Record<string, string> = {
   drawerDecor: 'Dekor szuflad',
   'drawers.top.length': 'Górna szuflada',
   'drawers.bottom.length': 'Dolna szuflada',
-  siphonOffset: 'Szerokość wycięcia',
   siphonX: 'Pozycja wycięcia',
   edgeHandleThickness: 'Grubość uchwytu krawędziowego',
   handleDrilling: 'Uchwyty',

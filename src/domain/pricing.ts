@@ -1,4 +1,4 @@
-import { BOARDS, findDecor, findRunner } from './catalog'
+import { findBoard, findDecor, findRunner } from './catalog'
 import type { Panel, PanelMaterial } from './panels'
 import { PRICING } from './pricing.config'
 import { DRAWER_IDS, type Config } from './schema'
@@ -27,7 +27,6 @@ const MM_PER_M = 1000
 
 const MATERIAL_LABELS: Record<PanelMaterial, string> = {
   carcass: 'Korpus',
-  back: 'Plecy',
   front: 'Fronty',
   drawer: 'Szuflady',
 }
@@ -64,16 +63,13 @@ function bandedLength(panel: Panel): number {
 function boardRate(panel: Panel): number {
   const base =
     panel.material === 'drawer' ? PRICING.drawerBoardPerM2 : PRICING.boardPerM2[panel.board]
-  const modifier = panel.decor ? (findDecor(panel.decor)?.pricePerM2Modifier ?? 1) : 1
+  const modifier = findDecor(panel.decor)?.pricePerM2Modifier ?? 1
   return base * modifier
 }
 
 function boardLabel(panel: Panel): string {
-  const board =
-    panel.board === 'hdf'
-      ? 'HDF'
-      : (BOARDS.find((candidate) => candidate.id === panel.board)?.name ?? panel.board)
-  const decor = panel.decor ? findDecor(panel.decor) : undefined
+  const board = findBoard(panel.board).name
+  const decor = findDecor(panel.decor)
   const material = [board, decor?.code].filter(Boolean).join(' ')
   return `${MATERIAL_LABELS[panel.material]}: ${material}`
 }

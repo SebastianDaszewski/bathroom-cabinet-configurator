@@ -1,4 +1,4 @@
-import { BOARDS, findDecor } from './catalog'
+import { findBoard, findDecor } from './catalog'
 import type { Cutout, Edges, Panel } from './panels'
 
 export interface CutListRow {
@@ -26,29 +26,20 @@ function edgeLabel(edges: Edges): string {
     .join(' ')
 }
 
-function materialLabel(panel: Panel): string {
-  if (panel.board === 'hdf') return `HDF ${panel.thickness} mm`
-  return BOARDS.find((board) => board.id === panel.board)?.name ?? panel.board
-}
-
 function decorLabel(panel: Panel): string {
-  if (!panel.decor) return ''
   const decor = findDecor(panel.decor)
   return decor ? `${decor.code} ${decor.name}` : panel.decor
 }
 
 function cutoutNotes(cutouts: readonly Cutout[]): string {
-  const notches = cutouts.filter((cutout) => cutout.kind === 'notch')
-  const holes = cutouts.filter((cutout) => cutout.kind === 'hole')
-  const notes = notches.map((notch) => `Wycięcie pod syfon ${notch.length}×${notch.width}`)
-  if (holes.length > 0) notes.push(`Otwory Ø${holes[0].diameter}: ${holes.length} szt.`)
-  return notes.join(', ')
+  if (cutouts.length === 0) return ''
+  return `Otwory Ø${cutouts[0].diameter}: ${cutouts.length} szt.`
 }
 
 function toRow(panel: Panel): CutListRow {
   return {
     name: panel.name,
-    material: materialLabel(panel),
+    material: findBoard(panel.board).name,
     decor: decorLabel(panel),
     length: panel.length,
     width: panel.width,

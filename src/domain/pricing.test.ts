@@ -45,7 +45,7 @@ describe('price — totals', () => {
   })
 
   it('includes the margin in every line', () => {
-    expect(find(quote(), 'Montaż')).toMatchObject({ quantity: 1, amount: grosze(230) })
+    expect(find(quote(), 'Montaż')).toMatchObject({ quantity: 1, amount: grosze(283) })
   })
 
   it('groups the breakdown by category', () => {
@@ -54,6 +54,17 @@ describe('price — totals', () => {
 
     expect(Object.keys(totals)).toEqual(['boards', 'edging', 'hardware', 'machining', 'labour'])
     expect(Object.values(totals).reduce((sum, value) => sum + value, 0)).toBe(result.total)
+  })
+})
+
+describe('price — siphon cut-out', () => {
+  it('adds about 44 PLN, like the reference', () => {
+    const cut = quote({
+      drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 450, siphonCut: false } },
+    })
+    const extra = (cut.total - quote().total) / 100
+    expect(extra).toBeGreaterThanOrEqual(40)
+    expect(extra).toBeLessThanOrEqual(50)
   })
 })
 
@@ -82,7 +93,7 @@ describe('price — boards and edging', () => {
   it('makes a wider cabinet more expensive in every board group', () => {
     const narrow = quote({ width: 500 })
     const wide = quote({ width: 1200 })
-    for (const label of ['Korpus', 'Plecy', 'Fronty', 'Szuflady', 'Okleina']) {
+    for (const label of ['Korpus', 'Fronty', 'Szuflady', 'Okleina']) {
       expect(find(wide, label)?.amount).toBeGreaterThan(find(narrow, label)?.amount ?? 0)
     }
   })
@@ -115,7 +126,7 @@ describe('price — hardware and machining', () => {
   })
 
   it('charges one siphon cut-out per drawer that has one', () => {
-    expect(find(quote(), 'Wycięcia')?.quantity).toBe(1)
+    expect(find(quote(), 'Wycięcia')).toBeUndefined()
     const both = quote({
       drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 450, siphonCut: true } },
     })
@@ -146,7 +157,7 @@ describe('price — hardware and machining', () => {
 
 describe('price — labour', () => {
   it('charges per panel', () => {
-    expect(find(quote(), 'Cięcie')?.quantity).toBe(12)
-    expect(find(quote({ runner: 'tandem' }), 'Cięcie')?.quantity).toBe(16)
+    expect(find(quote(), 'Cięcie')?.quantity).toBe(11)
+    expect(find(quote({ runner: 'tandem' }), 'Cięcie')?.quantity).toBe(15)
   })
 })

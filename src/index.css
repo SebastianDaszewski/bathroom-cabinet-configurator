@@ -617,10 +617,17 @@ button {
   color: var(--ink-muted);
 }
 
-.scene-reset {
+.scene-actions {
   position: absolute;
   top: 12px;
   right: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.scene-button {
   padding: 6px 12px;
   border: 1px solid var(--line-strong);
   border-radius: var(--radius-sm);
@@ -629,8 +636,14 @@ button {
   cursor: pointer;
 }
 
-.scene-reset:hover {
+.scene-button:hover {
   border-color: var(--glaze);
+}
+
+.scene-button[aria-pressed='true'] {
+  border-color: var(--glaze);
+  background: var(--glaze-soft);
+  color: var(--glaze-deep);
 }
 
 .dimension-labels {

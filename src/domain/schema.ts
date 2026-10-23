@@ -4,7 +4,6 @@ export const LIMITS = {
   width: { min: 500, max: 1200, step: 1 },
   height: { min: 400, max: 600, step: 1 },
   depth: { min: 390, max: 700, step: 1 },
-  siphonOffset: { min: 200, max: 236, step: 1 },
   edgeHandleThickness: { min: 1, max: 4, step: 1 },
   handleSpacing: { min: 32, max: 480, step: 32 },
 } as const
@@ -43,7 +42,6 @@ export const ConfigSchema = z.object({
   opening: z.enum(OPENING_TYPES),
   drawers: z.object({ top: DrawerSchema, bottom: DrawerSchema }),
   siphonPosition: z.enum(SIPHON_POSITIONS),
-  siphonOffset: z.number(),
   siphonX: z.number(),
   drawerDecor: z.string(),
 
@@ -70,11 +68,10 @@ export const DEFAULT_CONFIG: Config = {
   runner: 'blum',
   opening: 'blumotion',
   drawers: {
-    top: { length: 450, siphonCut: true },
+    top: { length: 450, siphonCut: false },
     bottom: { length: 450, siphonCut: false },
   },
   siphonPosition: 'center',
-  siphonOffset: 218,
   siphonX: 300,
   drawerDecor: 'white-w960',
 

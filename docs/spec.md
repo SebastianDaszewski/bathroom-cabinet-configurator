@@ -53,16 +53,15 @@ All lengths in millimetres (integers).
 
 ### 2.2 Drawers (exactly 2: `top`, `bottom`)
 
-| Param                 | Type     | Values                                    | Default                      |
-| --------------------- | -------- | ----------------------------------------- | ---------------------------- |
-| `runner`              | enum     | `tandem`, `blum`                          | `blum`                       |
-| `opening`             | enum     | `blumotion` (soft close), `tip-on` (push) | `blumotion`                  |
-| `drawer[i].length`    | enum     | 350, 400, 450                             | max allowed                  |
-| `drawer[i].siphonCut` | bool     | —                                         | top: `true`, bottom: `false` |
-| `siphonPosition`      | enum     | `center`, `custom`                        | `center`                     |
-| `siphonOffset`        | int      | 200–236 (cut width, from the reference)   | 218                          |
-| `siphonX`             | int      | cut-out centre from the left side (R11)   | 300                          |
-| `drawerDecor`         | decor id |                                           | `white-w960`                 |
+| Param                 | Type     | Values                                    | Default                       |
+| --------------------- | -------- | ----------------------------------------- | ----------------------------- |
+| `runner`              | enum     | `tandem`, `blum`                          | `blum`                        |
+| `opening`             | enum     | `blumotion` (soft close), `tip-on` (push) | `blumotion`                   |
+| `drawer[i].length`    | enum     | 350, 400, 450                             | max allowed                   |
+| `drawer[i].siphonCut` | bool     | —                                         | `false` (as in the reference) |
+| `siphonPosition`      | enum     | `center`, `custom`                        | `center`                      |
+| `siphonX`             | int      | cut-out centre from the left side (R11)   | 300                           |
+| `drawerDecor`         | decor id |                                           | `white-w960`                  |
 
 ### 2.3 Fronts
 
@@ -93,24 +92,26 @@ available on), `pricePerM2Modifier`.
 
 Each rule lives in `domain/rules/` as a pure function and has unit tests.
 
-| #   | Rule                                                                                                                                                                                                 |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R1  | Dimensions are clamped to their ranges; non-integer input is rounded.                                                                                                                                |
-| R2  | Allowed drawer lengths = `{350,400,450}` where `length <= depth - 40` (back panel + clearance). Min depth 390 → only 350; depth ≥ 490 → all three.                                                   |
-| R3  | If the selected drawer length becomes invalid after a depth change, it falls back to the largest allowed one (and the UI shows why).                                                                 |
-| R4  | `tip-on` and `handleDrilling != none` are mutually exclusive (push-to-open fronts have no handles). Same for `edge-handle` and `grip-groove` + drilling.                                             |
-| R5  | `edge-handle`: each front height is reduced by `edgeHandleThickness`.                                                                                                                                |
-| R6  | `handleSpacing` must be `<= width - 2*60` (handle fits on the front with margin); with `double` drilling each handle gets half the front: `<= width/2 - 2*60`. Options above the limit are disabled. |
-| R7  | `double` handle drilling requires `width >= 800`.                                                                                                                                                    |
-| R8  | Siphon cut-out width must leave ≥ 60 mm of drawer side on each side: `siphonOffset <= width - 2*18 - 120`.                                                                                           |
-| R9  | A decor may only be selected for a board type it supports; changing the board resets an incompatible decor to the first compatible one.                                                              |
-| R10 | Drawer front heights: the inner front gap is 3 mm, the two fronts split the height equally: `frontH = (height - 3) / 2` (minus R5).                                                                  |
-| R11 | With `siphonPosition = custom`, `siphonX` is clamped so the cut-out keeps the R8 margin: `18 + 60 + siphonOffset/2 <= siphonX <= width - (18 + 60 + siphonOffset/2)`.                                |
+| #   | Rule                                                                                                                                                                                                                |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | Dimensions are clamped to their ranges; non-integer input is rounded.                                                                                                                                               |
+| R2  | Allowed drawer lengths = `{350,400,450}` where `length <= depth - 40` (clearance behind the drawers for the siphon and pipes). Min depth 390 → only 350; depth ≥ 490 → all three.                                   |
+| R3  | If the selected drawer length becomes invalid after a depth change, it falls back to the largest allowed one (and the UI shows why).                                                                                |
+| R4  | `tip-on` and `handleDrilling != none` are mutually exclusive (push-to-open fronts have no handles). Same for `edge-handle` and `grip-groove` + drilling.                                                            |
+| R5  | `edge-handle`: each front height is reduced by `edgeHandleThickness`.                                                                                                                                               |
+| R6  | `handleSpacing` must be `<= width - 2*60` (handle fits on the front with margin); with `double` drilling each handle gets half the front: `<= width/2 - 2*60`. Options above the limit are disabled.                |
+| R7  | `double` handle drilling requires `width >= 800`.                                                                                                                                                                   |
+| R8  | (removed) The siphon cut-out has a fixed size taken from the reference: 164 × 270 mm. Its position is covered by R11.                                                                                               |
+| R9  | A decor may only be selected for a board type it supports; changing the board resets an incompatible decor to the first compatible one.                                                                             |
+| R10 | Drawer front heights: the inner front gap is 3 mm, the two fronts split the height equally: `frontH = (height - 3) / 2` (minus R5).                                                                                 |
+| R11 | With `siphonPosition = custom`, `siphonX` (cut-out centre from the left outer side) is clamped so the cut-out keeps ≥ 60 mm of drawer side on each side: `18 + 60 + 164/2 <= siphonX <= width - (18 + 60 + 164/2)`. |
 
 Resolutions: in R4 the opening / front type wins and `handleDrilling` resets to
 `none`; in R6 the spacing falls back to the largest multiple of 32 that fits; in
-R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). R8
-cannot trigger with the current ranges and is kept as a guard. Drawer boxes are
+R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). The
+reference's 218 mm is the distance of the cut-out from the side at width 600
+((600 − 164) / 2), not the cut-out width; an earlier version of this spec misread
+it. Drawer boxes are
 always chipboard (R9 checks `drawerDecor` against it).
 
 Rule violations never throw in the UI: the engine returns a **normalized
@@ -123,8 +124,10 @@ configuration + a list of adjustments/warnings** that the UI displays.
 `buildPanels(config) → Panel[]` — the single source of truth for both the 3D
 scene and the cut list (geometry and production list can never diverge).
 
-Assumptions: board thickness `t = 18`, drawer board 16 mm, back panel HDF 3 mm
-nailed onto the back, fronts overlay the carcass with 2 mm gaps at the sides.
+Assumptions: board thickness `t = 18`, drawer board 16 mm, fronts overlay the
+carcass with 2 mm gaps at the sides. No back panel: a vanity under a basin is
+open at the back so the siphon can be connected to the wall pipes; the back top
+rail keeps the carcass rigid.
 Drawer box height = front height − 70; the box sits 25 mm above its front's lower
 edge. All construction constants live in `domain/constants.ts`.
 
@@ -134,7 +137,6 @@ edge. All construction constants live in `domain/constants.ts`.
 | Bottom           | 1   | `width - 2t` × `depth`                                       | carcass  | front edge   |
 | Top rail (front) | 1   | `width - 2t` × 100                                           | carcass  | front edge   |
 | Top rail (back)  | 1   | `width - 2t` × 100                                           | carcass  | —            |
-| Back             | 1   | `width - 2` × `height - 2`                                   | HDF 3 mm | —            |
 | Drawer front     | 2   | `width - 4` × `frontH`                                       | front    | all 4        |
 | Drawer bottom    | 2   | `width - 2t - runner.bottomDeduction` × `drawer.length - 10` | drawer   | —            |
 | Drawer back      | 2   | `width - 2t - runner.backDeduction` × box height − 16        | drawer   | top          |
@@ -147,7 +149,9 @@ wooden 16 mm sides with 5 mm clearance each, bottom and back −42.
 `side-right`); the cut list merges identical pieces into rows with a quantity.
 
 `Panel` = `{ id, name, material, board, decor, length, width, thickness,
-edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[] }`.
+edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[], drawer }`; `drawer`
+is `top` / `bottom` for fronts and drawer boxes (they move together when the
+drawers are opened in 3D), `null` otherwise.
 
 - Coordinates in mm: x → right, y → up, z → front; origin at the left, bottom,
   back corner of the carcass. `position` is the centre of the panel's box,
@@ -156,9 +160,14 @@ edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[] }`.
 - `l1`/`l2` are the two edges along the length, `w1`/`w2` along the width.
 - `cutouts` are in panel coordinates (`u` along the length, `v` along the
   width, from the panel's minimum corner): handle holes Ø5 (two per handle,
-  `handleSpacing` apart, at the front's centre or 50 mm from its top) and the
-  siphon notch — 200 mm deep from the back edge of the drawer bottom, and in the
-  drawer back from the top edge down to a 30 mm strip.
+  `handleSpacing` apart, at the front's centre or 50 mm from its top).
+- Siphon cut-out (as in the reference): the drawer bottom stays whole; the
+  drawer back has a 164 mm gap through its full height for the pipe, so it is
+  made of two pieces (left / right, rounded to whole mm, so the gap may sit up to
+  0.5 mm off the requested centre). A shallow plastic tray (164 × 270 mm,
+  rounded front corners, 2 mm walls, 60 mm high, open at the back) sits on the
+  bottom in front of the gap. The tray is hardware: drawn in 3D, not in the cut
+  list, priced with the siphon cut-out (machining).
 
 Cut list CSV: `;` separator, UTF-8 with BOM, CRLF (opens correctly in Excel
 with a Polish locale). Columns: name, material, decor, length, width,
