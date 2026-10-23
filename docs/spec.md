@@ -105,6 +105,12 @@ Each rule lives in `domain/rules/` as a pure function and has unit tests.
 | R9  | A decor may only be selected for a board type it supports; changing the board resets an incompatible decor to the first compatible one.                  |
 | R10 | Drawer front heights: the inner front gap is 3 mm, the two fronts split the height equally: `frontH = (height - 3) / 2` (minus R5).                      |
 
+Resolutions: in R4 the opening / front type wins and `handleDrilling` resets to
+`none`; in R6 the spacing falls back to the largest multiple of 32 that fits; in
+R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). R8
+cannot trigger with the current ranges and is kept as a guard. Drawer boxes are
+always chipboard (R9 checks `drawerDecor` against it).
+
 Rule violations never throw in the UI: the engine returns a **normalized
 configuration + a list of adjustments/warnings** that the UI displays.
 
