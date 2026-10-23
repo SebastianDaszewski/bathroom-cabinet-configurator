@@ -21,7 +21,9 @@ export const RUNNER_TYPES = ['tandem', 'blum'] as const
 export const OPENING_TYPES = ['blumotion', 'tip-on'] as const
 export const DRAWER_LENGTHS = [350, 400, 450] as const
 export const SIPHON_POSITIONS = ['center', 'custom'] as const
-export const FRONT_TYPES = ['standard', 'grip-groove', 'edge-handle'] as const
+export const FRONT_TYPES = ['standard', 'grip-groove', 'edge-handle', 'edge-handle-ready'] as const
+export const SIDE_GRAINS = ['vertical', 'horizontal'] as const
+export const FRONT_GRAINS = ['horizontal', 'vertical'] as const
 export const HANDLE_DRILLINGS = ['none', 'single', 'double'] as const
 export const HANDLE_POSITIONS = ['top-50', 'center'] as const
 export const DRAWER_IDS = ['top', 'bottom'] as const
@@ -43,6 +45,7 @@ export const ConfigSchema = z.object({
   depth: z.number(),
   carcassBoard: z.enum(CARCASS_BOARD_TYPES),
   carcassDecor: z.string(),
+  sideGrain: z.enum(SIDE_GRAINS),
   topThickening: z.enum(TOP_THICKENINGS),
   topExtensionLeft: z.number(),
   topExtensionRight: z.number(),
@@ -56,9 +59,12 @@ export const ConfigSchema = z.object({
   siphonCutDepth: z.number(),
   siphonX: z.number(),
   drawerDecor: z.string(),
+  drawerBottomDecor: z.string(),
 
   frontBoard: z.enum(BOARD_TYPES),
   frontDecor: z.string(),
+  frontGrain: z.enum(FRONT_GRAINS),
+  continuousGrain: z.boolean(),
   frontType: z.enum(FRONT_TYPES),
   edgeHandleThickness: z.number(),
 
@@ -76,6 +82,7 @@ export const DEFAULT_CONFIG: Config = {
   depth: 500,
   carcassBoard: 'chipboard',
   carcassDecor: 'grey-u732',
+  sideGrain: 'vertical',
   topThickening: 'none',
   topExtensionLeft: 0,
   topExtensionRight: 0,
@@ -92,9 +99,12 @@ export const DEFAULT_CONFIG: Config = {
   siphonCutDepth: 270,
   siphonX: 300,
   drawerDecor: 'white-w960',
+  drawerBottomDecor: 'white-w962',
 
   frontBoard: 'chipboard',
   frontDecor: 'oak-h1145',
+  frontGrain: 'horizontal',
+  continuousGrain: false,
   frontType: 'standard',
   edgeHandleThickness: 2,
 

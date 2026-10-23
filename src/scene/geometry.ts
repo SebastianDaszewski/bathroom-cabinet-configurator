@@ -81,6 +81,15 @@ export function ndcToScreen(
   }
 }
 
+export function cabinetFloor(config: Config): number {
+  return toMetres(cabinetBounds(config).min.y - cabinetCentre(config).y)
+}
+
+export function cabinetSpan(config: Config): number {
+  const { min, max } = cabinetBounds(config)
+  return toMetres(Math.max(max.x - min.x, max.z - min.z))
+}
+
 export function cameraDistance(config: Config, fov = CAMERA_FOV): number {
   const { min, max } = cabinetBounds(config)
   const radius =

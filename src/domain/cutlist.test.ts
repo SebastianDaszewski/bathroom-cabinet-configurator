@@ -43,6 +43,7 @@ describe('toCutList', () => {
       thickness: 18,
       qty: 2,
       edges: 'D1',
+      grain: '',
       notes: '',
     })
     expect(rows.find((row) => row.name === 'Wieniec górny')).toMatchObject({
@@ -59,6 +60,28 @@ describe('toCutList', () => {
     )
     expect(front?.notes).toBe('Otwory Ø5: 2 szt.')
   })
+
+  it('states the grain direction of wood decors only', () => {
+    const vertical = toCutList(buildPanels({ ...DEFAULT_CONFIG, frontGrain: 'vertical' }))
+    const front = (list: CutListRow[]) => list.find((row) => row.name === 'Front szuflady')
+
+    expect(front(rows)?.grain).toBe('wzdłuż długości')
+    expect(front(vertical)?.grain).toBe('wzdłuż szerokości')
+    expect(rows.find((row) => row.name === 'Bok')?.grain).toBe('')
+  })
+
+  it('notes continuous grain on the fronts', () => {
+    const list = toCutList(
+      buildPanels({ ...DEFAULT_CONFIG, frontGrain: 'vertical', continuousGrain: true }),
+    )
+    expect(list.find((row) => row.name === 'Front szuflady')?.notes).toBe(
+      'Ciągłe usłojenie frontów',
+    )
+  })
+
+  it('lists the drawer bottom in its own decor', () => {
+    expect(rows.find((row) => row.name === 'Dno szuflady')?.decor).toBe('W962 Biały standard')
+  })
 })
 
 describe('toCsv', () => {
@@ -71,13 +94,14 @@ describe('toCsv', () => {
     thickness: 18,
     qty: 2,
     edges: 'D1',
+    grain: 'wzdłuż długości',
     notes: '',
   }
 
   it('starts with a BOM and a header, uses ; and CRLF', () => {
     expect(toCsv([row])).toBe(
-      '\uFEFFNazwa;Materiał;Dekor;Długość (mm);Szerokość (mm);Grubość (mm);Ilość;Okleina;Uwagi\r\n' +
-        'Bok;Płyta laminowana;U732 Szary pyłowy;500;500;18;2;D1;\r\n',
+      '\uFEFFNazwa;Materiał;Dekor;Długość (mm);Szerokość (mm);Grubość (mm);Ilość;Okleina;Usłojenie;Uwagi\r\n' +
+        'Bok;Płyta laminowana;U732 Szary pyłowy;500;500;18;2;D1;wzdłuż długości;\r\n',
     )
   })
 

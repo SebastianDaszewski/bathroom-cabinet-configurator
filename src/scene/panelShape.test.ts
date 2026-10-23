@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { buildPanels, type Panel } from '../domain/panels'
 import { normalize } from '../domain/rules'
 import { DEFAULT_CONFIG, type Config } from '../domain/schema'
-import { glueBlocks, panelBasis, panelMatrix, panelMeshes, panelOutline } from './panelShape'
+import {
+  grainAxis,
+  mergeGlued,
+  panelBasis,
+  panelMatrix,
+  panelMeshes,
+  panelOutline,
+  textureOffset,
+} from './panelShape'
 
 const config = (overrides: Partial<Config> = {}): Config =>
   normalize({ ...DEFAULT_CONFIG, ...overrides }).config
@@ -93,7 +101,7 @@ describe('panelMeshes', () => {
 
   it('takes colours from the decors', () => {
     expect(mesh('side-left')?.color).toBe('#8d8f8c')
-    expect(mesh('front-top')?.color).toBe('#b8915f')
+    expect(mesh('front-top')?.color).toBe('#d2b48c')
     expect(mesh('drawer-bottom-back')?.color).toBe('#f2f1ec')
   })
 
@@ -103,19 +111,51 @@ describe('panelMeshes', () => {
   })
 })
 
-describe('glueBlocks', () => {
-  it('has no blocks without glued panels', () => {
-    expect(glueBlocks(DEFAULT_CONFIG, buildPanels(DEFAULT_CONFIG))).toEqual([])
+describe('mergeGlued', () => {
+  it('keeps panels that are not glued', () => {
+    const panels = buildPanels(DEFAULT_CONFIG)
+    expect(mergeGlued(panels)).toEqual(panels)
   })
 
-  it('outlines a thickened countertop as one 36 mm block', () => {
-    const input = config({ topThickening: 'double' })
-    const [block] = glueBlocks(input, buildPanels(input))
+  it('renders a thickened countertop as one 36 mm board', () => {
+    const merged = mergeGlued(buildPanels(config({ topThickening: 'double' })))
+    const top = merged.find((panel) => panel.id === 'top')
 
-    expect(block.id).toBe('top')
-    expect(block.drawer).toBeNull()
-    expect(block.size[0]).toBeCloseTo(0.6)
-    expect(block.size[1]).toBeCloseTo(0.036)
-    expect(block.size[2]).toBeCloseTo(0.523)
+    expect(merged.some((panel) => panel.id === 'top-thickening')).toBe(false)
+    expect(top?.thickness).toBe(36)
+    expect(top?.size.y).toBe(36)
+    expect(top?.position.y).toBe(500 + 18)
+  })
+})
+
+describe('texture mapping', () => {
+  it('runs the grain along the panel length or width', () => {
+    const panels = buildPanels(config({ frontGrain: 'vertical' }))
+    const find = (id: string) => panels.find((panel) => panel.id === id)
+    const front = find('front-top')
+    const side = find('side-left')
+    if (!front || !side) throw new Error('missing panels')
+
+    expect(grainAxis(front)).toBe('v')
+    expect(grainAxis(side)).toBeNull()
+  })
+
+  it('aligns continuous fronts to the same texture', () => {
+    const panels = buildPanels(config({ frontGrain: 'vertical', continuousGrain: true }))
+    const top = panels.find((panel) => panel.id === 'front-top')
+    const bottom = panels.find((panel) => panel.id === 'front-bottom')
+    if (!top || !bottom) throw new Error('missing fronts')
+
+    expect(textureOffset(top)).toEqual([2, 251])
+    expect(textureOffset(bottom)).toEqual([2, 0])
+  })
+
+  it('shifts the texture of other panels so they do not look identical', () => {
+    const panels = buildPanels(DEFAULT_CONFIG)
+    const top = panels.find((panel) => panel.id === 'front-top')
+    const bottom = panels.find((panel) => panel.id === 'front-bottom')
+    if (!top || !bottom) throw new Error('missing fronts')
+
+    expect(textureOffset(top)[0]).not.toBe(textureOffset(bottom)[0])
   })
 })

@@ -23,13 +23,13 @@ assets or branding.
 - Live 3D preview (parametric geometry, dimension labels, camera reset)
 - Price engine with breakdown
 - Cut list (panels with dimensions, material, edge banding) + CSV export
+- Grain direction (sides, fronts) and continuous vertical grain across fronts
 - Configuration shareable via URL; persisted in localStorage
 
 ### Later (only if time allows)
 
-- Grain direction & continuous vertical grain across fronts
 - PDF export of the order summary
-- PBR textures, soft shadows, AR / screenshot
+- Photographic (PBR) textures, AR / screenshot
 
 ### Out of scope
 
@@ -50,6 +50,7 @@ All lengths in millimetres (integers).
 | `depth`             | int      | 390–700                          | 500         |
 | `carcassBoard`      | enum     | `chipboard`, `acrylic`, `mdf`    | `chipboard` |
 | `carcassDecor`      | decor id | see §2.5                         | `grey-u732` |
+| `sideGrain`         | enum     | `vertical`, `horizontal`         | `vertical`  |
 | `topThickening`     | enum     | `none` (18 mm), `double` (36 mm) | `none`      |
 | `topExtensionLeft`  | int      | 0–1800 (R12)                     | 0           |
 | `topExtensionRight` | int      | 0–1800 (R12)                     | 0           |
@@ -68,15 +69,18 @@ All lengths in millimetres (integers).
 | `siphonCutDepth`      | int      | 150–350, from the drawer back (R13)       | 270                           |
 | `siphonX`             | int      | cut-out centre from the left side (R11)   | 300                           |
 | `drawerDecor`         | decor id |                                           | `white-w960`                  |
+| `drawerBottomDecor`   | decor id | chipboard decors                          | `white-w962`                  |
 
 ### 2.3 Fronts
 
-| Param                 | Type     | Values                                        | Default     |
-| --------------------- | -------- | --------------------------------------------- | ----------- |
-| `frontBoard`          | enum     | `chipboard`, `acrylic`, `mdf`, `perfectsense` | `chipboard` |
-| `frontDecor`          | decor id |                                               | `oak-h1145` |
-| `frontType`           | enum     | `standard`, `grip-groove`, `edge-handle`      | `standard`  |
-| `edgeHandleThickness` | int      | 1–4                                           | 2           |
+| Param                 | Type     | Values                                                                                                       | Default      |
+| --------------------- | -------- | ------------------------------------------------------------------------------------------------------------ | ------------ |
+| `frontBoard`          | enum     | `chipboard`, `acrylic`, `mdf`, `perfectsense`                                                                | `chipboard`  |
+| `frontDecor`          | decor id |                                                                                                              | `oak-h1145`  |
+| `frontGrain`          | enum     | `horizontal`, `vertical`                                                                                     | `horizontal` |
+| `continuousGrain`     | bool     | grain continues across both fronts (R14)                                                                     | `false`      |
+| `frontType`           | enum     | `standard`, `grip-groove`, `edge-handle`, `edge-handle-ready` (shortened for a profile that is not supplied) | `standard`   |
+| `edgeHandleThickness` | int      | 1–4                                                                                                          | 2            |
 
 ### 2.4 Handle drilling
 
@@ -103,8 +107,8 @@ Each rule lives in `domain/rules/` as a pure function and has unit tests.
 | R1  | Dimensions are clamped to their ranges; non-integer input is rounded.                                                                                                                                               |
 | R2  | Allowed drawer lengths = `{350,400,450}` where `length <= depth - 40` (clearance behind the drawers for the siphon and pipes). Min depth 390 → only 350; depth ≥ 490 → all three.                                   |
 | R3  | If the selected drawer length becomes invalid after a depth change, it falls back to the largest allowed one (and the UI shows why).                                                                                |
-| R4  | `tip-on` and `handleDrilling != none` are mutually exclusive (push-to-open fronts have no handles). Same for `edge-handle` and `grip-groove` + drilling.                                                            |
-| R5  | `edge-handle`: each front height is reduced by `edgeHandleThickness`.                                                                                                                                               |
+| R4  | `tip-on` and `handleDrilling != none` are mutually exclusive (push-to-open fronts have no handles). Same for both edge-handle front types and `grip-groove` + drilling.                                             |
+| R5  | `edge-handle` and `edge-handle-ready`: each front height is reduced by `edgeHandleThickness`.                                                                                                                       |
 | R6  | `handleSpacing` must be `<= width - 2*60` (handle fits on the front with margin); with `double` drilling each handle gets half the front: `<= width/2 - 2*60`. Options above the limit are disabled.                |
 | R7  | `double` handle drilling requires `width >= 800`.                                                                                                                                                                   |
 | R8  | `siphonCutWidth` (120–300, default 164 as in the reference) must leave ≥ 60 mm of drawer side on each side: `siphonCutWidth <= width - 2*(18 + 60)`.                                                                |
@@ -113,6 +117,7 @@ Each rule lives in `domain/rules/` as a pure function and has unit tests.
 | R11 | With `siphonPosition = custom`, `siphonX` (cut-out centre from the left outer side) is clamped so the cut-out keeps the R8 margin: `18 + 60 + siphonCutWidth/2 <= siphonX <= width - (18 + 60 + siphonCutWidth/2)`. |
 | R12 | The countertop (`width + topExtensionLeft + topExtensionRight`) is at most 2800 mm long (one board); the excess is trimmed from the right extension first, then the left.                                           |
 | R13 | `siphonCutDepth` (150–350, default 270 as in the reference) must leave ≥ 60 mm of drawer bottom in front of the cut-out, for every drawer that has one: `siphonCutDepth <= drawer.length - 10 - 60`.                |
+| R14 | `continuousGrain` is only possible with `frontGrain = vertical`; otherwise it is turned off.                                                                                                                        |
 
 Resolutions: in R4 the opening / front type wins and `handleDrilling` resets to
 `none`; in R6 the spacing falls back to the largest multiple of 32 that fits; in
@@ -120,7 +125,7 @@ R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). The
 reference's 218 mm is the distance of the cut-out from the side at width 600
 ((600 − 164) / 2), not the cut-out width; an earlier version of this spec misread
 it. Drawer boxes are
-always chipboard (R9 checks `drawerDecor` against it).
+always chipboard (R9 checks `drawerDecor` and `drawerBottomDecor` against it).
 
 Rule violations never throw in the UI: the engine returns a **normalized
 configuration + a list of adjustments/warnings** that the UI displays.
@@ -224,6 +229,12 @@ machining / labour).
 ---
 
 ## 6. UI
+
+3D look: procedural, seamlessly tiling textures (wood grain, concrete,
+laminate) tinted with the decor colour and oriented by each panel's grain; no
+panel outlines; 1 mm rounded edges; studio lighting (drei `Environment` with
+`Lightformer`s, no HDR download) and a soft contact shadow. Glued boards
+(thickened countertop) render as one solid board.
 
 - Left: stepper with tabs — **Dimensions → Materials & colours → Drawers →
   Fronts & handles → Summary**. Each numeric field = slider + number input.

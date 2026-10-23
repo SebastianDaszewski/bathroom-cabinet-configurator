@@ -5,12 +5,14 @@ export interface Board {
   name: string
 }
 
+export type DecorFinish = 'wood' | 'concrete' | 'plain'
+
 export interface Decor {
   id: string
   name: string
   code: string
   color: string
-  texture?: string
+  finish: DecorFinish
   boards: readonly BoardType[]
   pricePerM2Modifier: number
 }
@@ -39,6 +41,7 @@ export const DECORS: readonly Decor[] = [
     name: 'Biały klasyczny',
     code: 'W960',
     color: '#f2f1ec',
+    finish: 'plain',
     boards: ['chipboard', 'acrylic', 'mdf'],
     pricePerM2Modifier: 1,
   },
@@ -47,6 +50,7 @@ export const DECORS: readonly Decor[] = [
     name: 'Szary pyłowy',
     code: 'U732',
     color: '#8d8f8c',
+    finish: 'plain',
     boards: ['chipboard', 'acrylic', 'mdf'],
     pricePerM2Modifier: 1,
   },
@@ -55,6 +59,7 @@ export const DECORS: readonly Decor[] = [
     name: 'Grafit',
     code: 'U961',
     color: '#3d3f41',
+    finish: 'plain',
     boards: ['chipboard', 'mdf'],
     pricePerM2Modifier: 1.05,
   },
@@ -62,7 +67,8 @@ export const DECORS: readonly Decor[] = [
     id: 'oak-h1145',
     name: 'Dąb naturalny',
     code: 'H1145',
-    color: '#b8915f',
+    color: '#d2b48c',
+    finish: 'wood',
     boards: ['chipboard'],
     pricePerM2Modifier: 1.15,
   },
@@ -70,7 +76,8 @@ export const DECORS: readonly Decor[] = [
     id: 'walnut-h3734',
     name: 'Orzech',
     code: 'H3734',
-    color: '#7b5a3e',
+    color: '#8f6a4c',
+    finish: 'wood',
     boards: ['chipboard'],
     pricePerM2Modifier: 1.2,
   },
@@ -79,6 +86,7 @@ export const DECORS: readonly Decor[] = [
     name: 'Jasny beton',
     code: 'F186',
     color: '#a7a6a1',
+    finish: 'concrete',
     boards: ['chipboard'],
     pricePerM2Modifier: 1.1,
   },
@@ -87,6 +95,7 @@ export const DECORS: readonly Decor[] = [
     name: 'Czarny mat',
     code: 'PS01',
     color: '#1f1f1f',
+    finish: 'plain',
     boards: ['perfectsense'],
     pricePerM2Modifier: 1,
   },
@@ -95,8 +104,18 @@ export const DECORS: readonly Decor[] = [
     name: 'Greige mat',
     code: 'PS02',
     color: '#b5aca1',
+    finish: 'plain',
     boards: ['perfectsense'],
     pricePerM2Modifier: 1,
+  },
+  {
+    id: 'white-w962',
+    name: 'Biały standard',
+    code: 'W962',
+    color: '#f4f4f1',
+    finish: 'plain',
+    boards: ['chipboard'],
+    pricePerM2Modifier: 0.95,
   },
 ]
 
@@ -125,6 +144,11 @@ export function findBoard(id: BoardType): Board {
 
 export function findRunner(id: RunnerType): Runner {
   return RUNNERS.find((runner) => runner.id === id) ?? RUNNERS[0]
+}
+
+export function isGrained(id: string): boolean {
+  const finish = findDecor(id)?.finish
+  return finish !== undefined && finish !== 'plain'
 }
 
 export function findDecor(id: string): Decor | undefined {

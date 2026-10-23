@@ -17,6 +17,17 @@ export const FRONT_TYPE_LABELS: Record<Config['frontType'], string> = {
   standard: 'Gładki',
   'grip-groove': 'Frezowany uchwyt',
   'edge-handle': 'Uchwyt krawędziowy',
+  'edge-handle-ready': 'Pod uchwyt krawędziowy',
+}
+
+export const SIDE_GRAIN_LABELS: Record<Config['sideGrain'], string> = {
+  vertical: 'Pionowe',
+  horizontal: 'Poziome',
+}
+
+export const FRONT_GRAIN_LABELS: Record<Config['frontGrain'], string> = {
+  horizontal: 'Poziome',
+  vertical: 'Pionowe',
 }
 
 export const HANDLE_DRILLING_LABELS: Record<Config['handleDrilling'], string> = {
@@ -53,6 +64,8 @@ const FIELD_LABELS: Record<string, string> = {
   carcassDecor: 'Dekor korpusu',
   frontDecor: 'Dekor frontów',
   drawerDecor: 'Dekor szuflad',
+  drawerBottomDecor: 'Dekor dna szuflad',
+  continuousGrain: 'Ciągłe usłojenie',
   'drawers.top.length': 'Górna szuflada',
   'drawers.bottom.length': 'Dolna szuflada',
   siphonX: 'Pozycja wycięcia',

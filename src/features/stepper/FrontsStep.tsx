@@ -3,6 +3,7 @@ import {
   allowedHandleDrillings,
   allowedHandleSpacings,
   handleDrillingBlocker,
+  hasEdgeHandle,
 } from '../../domain/rules'
 import {
   FRONT_TYPES,
@@ -45,12 +46,16 @@ export function FrontsStep() {
           }))}
           onChange={(frontType) => update({ frontType })}
         />
-        {config.frontType === 'edge-handle' && (
+        {hasEdgeHandle(config) && (
           <NumberField
             label="Grubość profilu uchwytu"
             value={config.edgeHandleThickness}
             {...LIMITS.edgeHandleThickness}
-            hint="Każdy front jest niższy o grubość profilu."
+            hint={
+              config.frontType === 'edge-handle'
+                ? 'Każdy front jest niższy o grubość profilu.'
+                : 'Fronty są skrócone pod profil, ale sam profil nie jest w zestawie.'
+            }
             onChange={(edgeHandleThickness) => update({ edgeHandleThickness })}
           />
         )}

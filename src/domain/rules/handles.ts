@@ -1,5 +1,6 @@
 import { DOUBLE_HANDLE_MIN_WIDTH, HANDLE_EDGE_MARGIN } from '../constants'
 import { HANDLE_DRILLINGS, LIMITS, type Config } from '../schema'
+import { hasEdgeHandle } from './fronts'
 import type { Rule } from './types'
 
 type HandleDrilling = Config['handleDrilling']
@@ -7,8 +8,7 @@ type HandleDrilling = Config['handleDrilling']
 export function handleDrillingBlocker(config: Config): string | null {
   if (config.opening === 'tip-on')
     return 'Fronty otwierane przez naciśnięcie (Tip-On) nie mają uchwytów.'
-  if (config.frontType === 'edge-handle')
-    return 'Fronty z uchwytem krawędziowym nie mają nawierceń pod uchwyty.'
+  if (hasEdgeHandle(config)) return 'Fronty z uchwytem krawędziowym nie mają nawierceń pod uchwyty.'
   if (config.frontType === 'grip-groove')
     return 'Fronty z frezowanym uchwytem nie mają nawierceń pod uchwyty.'
   return null

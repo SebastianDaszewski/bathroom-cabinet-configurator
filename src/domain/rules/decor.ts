@@ -6,9 +6,14 @@ export function compatibleDecors(board: BoardType): Decor[] {
   return DECORS.filter((decor) => decor.boards.includes(board))
 }
 
-type DecorField = 'carcassDecor' | 'frontDecor' | 'drawerDecor'
+type DecorField = 'carcassDecor' | 'frontDecor' | 'drawerDecor' | 'drawerBottomDecor'
 
-const DECOR_FIELDS: readonly DecorField[] = ['carcassDecor', 'frontDecor', 'drawerDecor']
+const DECOR_FIELDS: readonly DecorField[] = [
+  'carcassDecor',
+  'frontDecor',
+  'drawerDecor',
+  'drawerBottomDecor',
+]
 
 function boardFor(config: Config, field: DecorField): BoardType {
   if (field === 'carcassDecor') return config.carcassBoard

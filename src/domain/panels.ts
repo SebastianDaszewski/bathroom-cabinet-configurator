@@ -1,4 +1,4 @@
-import { DRAWER_BOARD, findRunner } from './catalog'
+import { DRAWER_BOARD, findDecor, findRunner } from './catalog'
 import {
   BOARD_THICKNESS,
   DRAWER_BOARD_THICKNESS,
@@ -38,6 +38,8 @@ export interface Cutout {
   diameter: number
 }
 
+export type GrainDirection = 'length' | 'width'
+
 export interface Panel {
   id: string
   name: string
@@ -54,12 +56,19 @@ export interface Panel {
   cutouts: Cutout[]
   drawer: DrawerId | null
   glueGroup: string | null
+  grain: GrainDirection | null
+  continuousGrain: boolean
 }
 
-type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer' | 'glueGroup'> & {
+type PanelSpec = Omit<
+  Panel,
+  'position' | 'size' | 'cutouts' | 'edges' | 'drawer' | 'glueGroup' | 'grain' | 'continuousGrain'
+> & {
   min: Vec3
   drawer?: DrawerId
   glueGroup?: string
+  grain?: GrainDirection
+  continuousGrain?: boolean
   edges?: Partial<Edges>
   cutouts?: Cutout[]
 }
@@ -67,7 +76,16 @@ type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer
 const NO_EDGES: Edges = { l1: false, l2: false, w1: false, w2: false }
 const ALL_EDGES: Edges = { l1: true, l2: true, w1: true, w2: true }
 
-function place({ min, edges = {}, cutouts = [], drawer, glueGroup, ...panel }: PanelSpec): Panel {
+function place({
+  min,
+  edges = {},
+  cutouts = [],
+  drawer,
+  glueGroup,
+  grain = 'length',
+  continuousGrain = false,
+  ...panel
+}: PanelSpec): Panel {
   const size: Vec3 = { x: 0, y: 0, z: 0 }
   size[panel.axes[0]] = panel.length
   size[panel.axes[1]] = panel.width
@@ -81,6 +99,8 @@ function place({ min, edges = {}, cutouts = [], drawer, glueGroup, ...panel }: P
     cutouts,
     drawer: drawer ?? null,
     glueGroup: glueGroup ?? null,
+    grain: findDecor(panel.decor)?.finish === 'plain' ? null : grain,
+    continuousGrain,
   }
 }
 
@@ -90,6 +110,7 @@ function carcassPanels(config: Config): Panel[] {
   const { width, height, depth, carcassBoard: board, carcassDecor: decor } = config
   const inner = width - 2 * t
   const carcass = { material: 'carcass', board, decor, thickness: t } as const
+  const sideGrain = config.sideGrain === 'vertical' ? 'length' : 'width'
 
   return [
     place({
@@ -101,6 +122,7 @@ function carcassPanels(config: Config): Panel[] {
       axes: ['y', 'z', 'x'],
       min: { x: 0, y: 0, z: 0 },
       edges: { l1: true },
+      grain: sideGrain,
     }),
     place({
       ...carcass,
@@ -111,6 +133,7 @@ function carcassPanels(config: Config): Panel[] {
       axes: ['y', 'z', 'x'],
       min: { x: width - t, y: 0, z: 0 },
       edges: { l1: true },
+      grain: sideGrain,
     }),
     place({
       ...carcass,
@@ -234,6 +257,8 @@ function frontPanels(config: Config): Panel[] {
       min: { x: FRONT_EDGE_GAP, y: bottoms[id], z: config.depth },
       edges: ALL_EDGES,
       cutouts: handleHoles(config, length, heights[id]),
+      grain: config.frontGrain === 'horizontal' ? 'length' : 'width',
+      continuousGrain: config.continuousGrain,
     }),
   )
 }
@@ -263,6 +288,7 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
     ...material,
     id: `drawer-${id}-bottom`,
     name: 'Dno szuflady',
+    decor: config.drawerBottomDecor,
     length: bottomLength,
     width: drawer.length - DRAWER_BOTTOM_SHORTENING,
     thickness: dt,

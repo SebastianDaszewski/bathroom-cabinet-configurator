@@ -20,6 +20,15 @@ describe('R10 frontHeights', () => {
 })
 
 describe('R5 edge-handle fronts', () => {
+  it('shortens fronts prepared for an edge handle too', () => {
+    const heights = frontHeights({
+      ...DEFAULT_CONFIG,
+      frontType: 'edge-handle-ready',
+      edgeHandleThickness: 4,
+    })
+    expect(heights).toEqual({ top: 245, bottom: 244 })
+  })
+
   it('reduces each front by the handle thickness', () => {
     const heights = frontHeights({
       ...DEFAULT_CONFIG,
