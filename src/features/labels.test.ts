@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPln, formatQuantity } from '../ui/format'
+import { formatPln, formatQuantity, pluralPl } from '../ui/format'
 import { describeAdjustment } from './labels'
 
 const normalizeSpaces = (text: string) => text.replace(/\s/g, ' ')
@@ -56,5 +56,23 @@ describe('format', () => {
     expect(formatQuantity(0.895, 'm²')).toBe('0,9 m²')
     expect(formatQuantity(2, 'szt.')).toBe('2 szt.')
     expect(formatQuantity(6.46, 'm')).toBe('6,46 m')
+  })
+})
+
+describe('pluralPl', () => {
+  const forms: [string, string, string] = ['formatka', 'formatki', 'formatek']
+
+  it.each([
+    [1, 'formatka'],
+    [2, 'formatki'],
+    [4, 'formatki'],
+    [5, 'formatek'],
+    [12, 'formatek'],
+    [14, 'formatek'],
+    [22, 'formatki'],
+    [25, 'formatek'],
+    [0, 'formatek'],
+  ])('%d → %s', (count, expected) => {
+    expect(pluralPl(count, forms)).toBe(expected)
   })
 })

@@ -725,6 +725,94 @@ button {
   user-select: none;
 }
 
+.summary-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.summary-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 38%) 1fr;
+  gap: 12px;
+  font-size: var(--text-sm);
+}
+
+.summary-row dt {
+  color: var(--ink-muted);
+}
+
+.summary-row dd {
+  margin: 0;
+}
+
+.cutlist-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+}
+
+.cutlist {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.cutlist th,
+.cutlist td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.cutlist thead th {
+  background: var(--stone);
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.cutlist tbody th {
+  font-weight: 600;
+  white-space: normal;
+}
+
+.cutlist tbody tr:last-child th,
+.cutlist tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.cutlist-meta {
+  display: block;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  font-weight: 400;
+}
+
+.summary-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0 0 4px;
+}
+
+.summary-total strong {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-variant-numeric: tabular-nums;
+}
+
+.price-bar {
+  display: none;
+}
+
 @media (max-width: 1100px) {
   .app {
     grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
@@ -755,8 +843,14 @@ button {
     padding: 12px 16px;
   }
 
+  .app-header {
+    order: -2;
+  }
+
   .app-scene {
-    height: 55vh;
+    order: -1;
+    height: 50vh;
+    min-height: 300px;
     flex: none;
   }
 
@@ -776,7 +870,31 @@ button {
   }
 
   .price-panel {
-    padding: 16px;
+    padding: 16px 16px 88px;
+  }
+
+  .price-bar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-sm);
+    text-decoration: none;
+    box-shadow: 0 -8px 24px rgb(29 43 42 / 8%);
+  }
+
+  .price-bar strong {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    font-variant-numeric: tabular-nums;
   }
 }
 

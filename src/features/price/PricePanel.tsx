@@ -1,12 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { PRICE_CATEGORIES, subtotals, type Price } from '../../domain/pricing'
-import { shareUrl } from '../../state/persistence'
 import { useConfigurator, useDerived } from '../../state/useConfigurator'
 import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { formatPln, formatQuantity } from '../../ui/format'
 import { describeAdjustment, PRICE_CATEGORY_LABELS } from '../labels'
-
-const COPIED_TIMEOUT = 2000
+import { CopyLinkButton } from '../share/CopyLinkButton'
 
 function Breakdown({ price }: { price: Price }) {
   const totals = subtotals(price.lines)
@@ -79,32 +77,6 @@ function Adjustments() {
   )
 }
 
-function CopyLinkButton() {
-  const config = useConfigurator((state) => state.config)
-  const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    if (!copied) return
-    const timer = setTimeout(() => setCopied(false), COPIED_TIMEOUT)
-    return () => clearTimeout(timer)
-  }, [copied])
-
-  const copy = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl(config, window.location))
-      setCopied(true)
-    } catch {
-      setCopied(false)
-    }
-  }
-
-  return (
-    <button type="button" className="button-secondary" onClick={copy}>
-      <span aria-live="polite">{copied ? 'Link skopiowany' : 'Kopiuj link do projektu'}</span>
-    </button>
-  )
-}
-
 function ResetButton() {
   const reset = useConfigurator((state) => state.reset)
   const [confirming, setConfirming] = useState(false)
@@ -133,8 +105,12 @@ export function PricePanel() {
   const { price } = useDerived()
 
   return (
-    <aside className="price-panel" aria-label="Cena">
-      <div className="price-total">
+    <aside className="price-panel" aria-label="Cena" id="price">
+      <a className="price-bar" href="#price-details">
+        <span>Cena z montażem</span>
+        <strong>{formatPln(price.total)}</strong>
+      </a>
+      <div className="price-total" id="price-details">
         <span className="price-caption">Cena szafki z montażem</span>
         <output className="price-amount">{formatPln(price.total)}</output>
         <span className="price-note">brutto, z VAT</span>

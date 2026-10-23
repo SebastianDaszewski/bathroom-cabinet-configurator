@@ -3,6 +3,7 @@ import { DimensionsStep } from './DimensionsStep'
 import { DrawersStep } from './DrawersStep'
 import { FrontsStep } from './FrontsStep'
 import { MaterialsStep } from './MaterialsStep'
+import { SummaryStep } from './SummaryStep'
 
 interface Step {
   title: string
@@ -14,6 +15,7 @@ const STEPS: readonly Step[] = [
   { title: 'Materiały i kolory', Component: MaterialsStep },
   { title: 'Szuflady', Component: DrawersStep },
   { title: 'Fronty i uchwyty', Component: FrontsStep },
+  { title: 'Podsumowanie', Component: SummaryStep },
 ]
 
 const KEY_STEPS: Record<string, number> = {

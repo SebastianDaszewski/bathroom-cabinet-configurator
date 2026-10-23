@@ -132,7 +132,16 @@ every milestone.
       `sideGrain`, `frontGrain`, `continuousGrain` (R14), grain column in the
       cut list, `drawerBottomDecor` (W962), front type `edge-handle-ready`
       (shortened, no profile, no profile price). 339 tests.
-- [ ] 10. Summary, CSV export, responsive polish, Playwright, deploy
+- [x] **10. Summary, CSV, mobile, Playwright** — 5th step "Podsumowanie":
+      grouped configuration (`summaryGroups`, tested), cut list table, CSV
+      download (`szafka-600x500x500-formatki.csv`), copy link; Polish plural
+      helper. Mobile: 3D view on top, steps below, sticky price bar; checked
+      with Playwright screenshots at 375 px. Playwright smoke tests (load,
+      price + URL update, CSV download, reset confirmation, no horizontal
+      scroll) on desktop and 375 px; separate `e2e` CI job. README rewritten
+      for reviewers. 355 unit + 10 e2e tests.
+- [ ] Deploy to Vercel (owner imports the repo; then add the live link to
+      the README)
 
 ## Repo
 
