@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { normalize } from '../../domain/rules'
 import { DEFAULT_CONFIG, type Config } from '../../domain/schema'
-import { summaryGroups } from './summary'
+import { rowCost, summaryGroups } from './summary'
 
 const config = (overrides: Partial<Config> = {}): Config =>
   normalize({ ...DEFAULT_CONFIG, ...overrides }).config
@@ -60,5 +60,43 @@ describe('summaryGroups', () => {
     expect(value(config({ frontType: 'edge-handle' }), 'Fronty i uchwyty', 'Front')).toBe(
       'Uchwyt krawędziowy, profil 2 mm',
     )
+  })
+})
+
+describe('rowCost', () => {
+  const row = (input: Config, group: string, label: string) => {
+    const found = summaryGroups(input)
+      .find((candidate) => candidate.title === group)
+      ?.rows.find((candidate) => candidate.label === label)
+    if (!found) throw new Error(`Missing row ${label}`)
+    return found
+  }
+
+  it('is zero for default choices', () => {
+    for (const group of summaryGroups(DEFAULT_CONFIG)) {
+      for (const candidate of group.rows) {
+        expect(rowCost(DEFAULT_CONFIG, candidate), candidate.label).toBe(0)
+      }
+    }
+  })
+
+  it('prices an upgrade against the default choice', () => {
+    const input = config({ opening: 'tip-on', topThickening: 'double' })
+    expect(rowCost(input, row(input, 'Szuflady', 'Otwieranie'))).toBeGreaterThan(0)
+    expect(rowCost(input, row(input, 'Wymiary', 'Blat'))).toBeGreaterThan(0)
+  })
+
+  it('prices the siphon cut-out', () => {
+    const input = config({
+      drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 450, siphonCut: false } },
+    })
+    const cost = rowCost(input, row(input, 'Szuflady', 'Wycięcie pod syfon')) / 100
+    expect(cost).toBeGreaterThan(40)
+    expect(cost).toBeLessThan(50)
+  })
+
+  it('can be negative for a smaller cabinet', () => {
+    const input = config({ width: 500 })
+    expect(rowCost(input, row(input, 'Wymiary', 'Korpus'))).toBeLessThan(0)
   })
 })

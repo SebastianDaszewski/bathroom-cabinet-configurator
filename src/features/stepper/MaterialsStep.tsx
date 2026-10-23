@@ -5,10 +5,19 @@ import { useConfigurator } from '../../state/useConfigurator'
 import { ChoiceField } from '../../ui/ChoiceField'
 import { DecorPicker } from '../../ui/DecorPicker'
 import { Toggle } from '../../ui/Toggle'
-import { boardLabel, FRONT_GRAIN_LABELS, SIDE_GRAIN_LABELS } from '../labels'
+import { BOARD_DESCRIPTIONS, boardLabel, FRONT_GRAIN_LABELS, SIDE_GRAIN_LABELS } from '../labels'
+import { priceNote } from '../priceNotes'
 
-const boardChoices = <T extends string>(boards: readonly T[]) =>
-  boards.map((board) => ({ value: board, label: boardLabel(board) }))
+const boardChoices = <T extends string>(
+  boards: readonly T[],
+  note: (board: T) => string | undefined,
+) =>
+  boards.map((board) => ({
+    value: board,
+    label: boardLabel(board),
+    note: note(board),
+    description: BOARD_DESCRIPTIONS[board],
+  }))
 
 export function MaterialsStep() {
   const config = useConfigurator((state) => state.config)
@@ -21,13 +30,16 @@ export function MaterialsStep() {
         <ChoiceField
           label="Materiał"
           value={config.carcassBoard}
-          options={boardChoices(CARCASS_BOARD_TYPES)}
+          options={boardChoices(CARCASS_BOARD_TYPES, (carcassBoard) =>
+            priceNote(config, { carcassBoard }),
+          )}
           onChange={(carcassBoard) => update({ carcassBoard })}
         />
         <DecorPicker
           label="Dekor"
           value={config.carcassDecor}
           decors={compatibleDecors(config.carcassBoard)}
+          noteFor={(carcassDecor) => priceNote(config, { carcassDecor })}
           onChange={(carcassDecor) => update({ carcassDecor })}
         />
         {isGrained(config.carcassDecor) && (
@@ -48,13 +60,14 @@ export function MaterialsStep() {
         <ChoiceField
           label="Materiał"
           value={config.frontBoard}
-          options={boardChoices(BOARD_TYPES)}
+          options={boardChoices(BOARD_TYPES, (frontBoard) => priceNote(config, { frontBoard }))}
           onChange={(frontBoard) => update({ frontBoard })}
         />
         <DecorPicker
           label="Dekor"
           value={config.frontDecor}
           decors={compatibleDecors(config.frontBoard)}
+          noteFor={(frontDecor) => priceNote(config, { frontDecor })}
           onChange={(frontDecor) => update({ frontDecor })}
         />
         {isGrained(config.frontDecor) && (
@@ -86,12 +99,14 @@ export function MaterialsStep() {
           label="Dekor wnętrza szuflad"
           value={config.drawerDecor}
           decors={compatibleDecors(DRAWER_BOARD)}
+          noteFor={(drawerDecor) => priceNote(config, { drawerDecor })}
           onChange={(drawerDecor) => update({ drawerDecor })}
         />
         <DecorPicker
           label="Dekor dna szuflad"
           value={config.drawerBottomDecor}
           decors={compatibleDecors(DRAWER_BOARD)}
+          noteFor={(drawerBottomDecor) => priceNote(config, { drawerBottomDecor })}
           onChange={(drawerBottomDecor) => update({ drawerBottomDecor })}
         />
       </section>

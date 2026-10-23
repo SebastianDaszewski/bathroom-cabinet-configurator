@@ -6,3 +6,10 @@ export function downloadText(fileName: string, content: string, type: string): v
   link.click()
   URL.revokeObjectURL(url)
 }
+
+export function downloadDataUrl(fileName: string, dataUrl: string): void {
+  const link = document.createElement('a')
+  link.href = dataUrl
+  link.download = fileName
+  link.click()
+}

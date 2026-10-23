@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatPln, formatQuantity, pluralPl } from '../ui/format'
+import { formatPln, formatPriceChange, formatQuantity, pluralPl } from '../ui/format'
 import { describeAdjustment } from './labels'
 
 const normalizeSpaces = (text: string) => text.replace(/\s/g, ' ')
@@ -74,5 +74,16 @@ describe('pluralPl', () => {
     [0, 'formatek'],
   ])('%d → %s', (count, expected) => {
     expect(pluralPl(count, forms)).toBe(expected)
+  })
+})
+
+describe('formatPriceChange', () => {
+  it('signs the amount', () => {
+    expect(normalizeSpaces(formatPriceChange(4443))).toBe('+44,43 zł')
+    expect(normalizeSpaces(formatPriceChange(-1200))).toBe('−12,00 zł')
+  })
+
+  it('says when nothing changes', () => {
+    expect(formatPriceChange(0)).toBe('bez dopłaty')
   })
 })

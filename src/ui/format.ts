@@ -22,3 +22,9 @@ export function pluralPl(count: number, [one, few, many]: [string, string, strin
   if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return few
   return many
 }
+
+export function formatPriceChange(grosze: number): string {
+  if (grosze === 0) return 'bez dopłaty'
+  const amount = formatPln(Math.abs(grosze))
+  return grosze > 0 ? `+${amount}` : `−${amount}`
+}

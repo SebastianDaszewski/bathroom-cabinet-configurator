@@ -5,7 +5,8 @@ import { LIMITS, TOP_THICKENINGS } from '../../domain/schema'
 import { useConfigurator } from '../../state/useConfigurator'
 import { ChoiceField } from '../../ui/ChoiceField'
 import { NumberField } from '../../ui/NumberField'
-import { TOP_THICKENING_LABELS } from '../labels'
+import { TOP_THICKENING_DESCRIPTIONS, TOP_THICKENING_LABELS } from '../labels'
+import { priceNote } from '../priceNotes'
 
 export function DimensionsStep() {
   const config = useConfigurator((state) => state.config)
@@ -49,6 +50,8 @@ export function DimensionsStep() {
           options={TOP_THICKENINGS.map((thickening) => ({
             value: thickening,
             label: TOP_THICKENING_LABELS[thickening],
+            note: priceNote(config, { topThickening: thickening }),
+            description: TOP_THICKENING_DESCRIPTIONS[thickening],
           }))}
           onChange={(topThickening) => update({ topThickening })}
         />

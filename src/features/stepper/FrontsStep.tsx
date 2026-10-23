@@ -15,7 +15,14 @@ import {
 import { useConfigurator } from '../../state/useConfigurator'
 import { ChoiceField } from '../../ui/ChoiceField'
 import { NumberField } from '../../ui/NumberField'
-import { FRONT_TYPE_LABELS, HANDLE_DRILLING_LABELS, HANDLE_POSITION_LABELS } from '../labels'
+import {
+  FRONT_TYPE_DESCRIPTIONS,
+  FRONT_TYPE_LABELS,
+  HANDLE_DRILLING_DESCRIPTIONS,
+  HANDLE_DRILLING_LABELS,
+  HANDLE_POSITION_LABELS,
+} from '../labels'
+import { priceNote } from '../priceNotes'
 
 function drillingHint(config: Config): string | null {
   const blocker = handleDrillingBlocker(config)
@@ -43,6 +50,8 @@ export function FrontsStep() {
           options={FRONT_TYPES.map((frontType) => ({
             value: frontType,
             label: FRONT_TYPE_LABELS[frontType],
+            note: priceNote(config, { frontType }),
+            description: FRONT_TYPE_DESCRIPTIONS[frontType],
           }))}
           onChange={(frontType) => update({ frontType })}
         />
@@ -70,6 +79,10 @@ export function FrontsStep() {
             value: drilling,
             label: HANDLE_DRILLING_LABELS[drilling],
             disabled: !drillings.includes(drilling),
+            note: drillings.includes(drilling)
+              ? priceNote(config, { handleDrilling: drilling })
+              : undefined,
+            description: HANDLE_DRILLING_DESCRIPTIONS[drilling],
           }))}
           hint={drillingHint(config)}
           onChange={(handleDrilling) => update({ handleDrilling })}

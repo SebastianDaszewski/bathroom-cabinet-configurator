@@ -1,30 +1,52 @@
+import { useState } from 'react'
 import { cutListFileName, toCsv, toCutList } from '../../domain/cutlist'
+import { totalPrice } from '../../domain/priceDelta'
+import { DEFAULT_CONFIG } from '../../domain/schema'
+import { shareUrl } from '../../state/persistence'
 import { useDerived } from '../../state/useConfigurator'
 import { downloadText } from '../../ui/download'
-import { formatPln, pluralPl } from '../../ui/format'
+import { formatPln, formatPriceChange, pluralPl } from '../../ui/format'
+import { InquiryDialog } from '../inquiry/InquiryDialog'
 import { CopyLinkButton } from '../share/CopyLinkButton'
-import { summaryGroups } from '../summary/summary'
+import { ShareButton } from '../share/ShareButton'
+import { rowCost, summaryGroups } from '../summary/summary'
 
 export function SummaryStep() {
   const { config, panels, price } = useDerived()
+  const [inquiring, setInquiring] = useState(false)
   const rows = toCutList(panels)
   const pieces = rows.reduce((sum, row) => sum + row.qty, 0)
+  const groups = summaryGroups(config)
+  const title = `szafka ${config.width} × ${config.height} × ${config.depth} mm`
 
   const download = () =>
     downloadText(cutListFileName(config), toCsv(rows), 'text/csv;charset=utf-8')
 
   return (
     <>
-      {summaryGroups(config).map((group) => (
+      <p className="summary-base">
+        Szafka 600 × 500 × 500 mm w wersji podstawowej kosztuje{' '}
+        {formatPln(totalPrice(DEFAULT_CONFIG))}. Przy każdej pozycji widać, ile zmienia Twój wybór.
+      </p>
+
+      {groups.map((group) => (
         <section className="step-group" key={group.title}>
           <h3 className="step-group-title">{group.title}</h3>
           <dl className="summary-list">
-            {group.rows.map((row) => (
-              <div className="summary-row" key={row.label}>
-                <dt>{row.label}</dt>
-                <dd>{row.value}</dd>
-              </div>
-            ))}
+            {group.rows.map((row) => {
+              const cost = rowCost(config, row)
+              return (
+                <div className="summary-row" key={row.label}>
+                  <dt>{row.label}</dt>
+                  <dd>
+                    {row.value}
+                    <span className="summary-cost" data-zero={cost === 0}>
+                      {cost === 0 ? 'w cenie' : formatPriceChange(cost)}
+                    </span>
+                  </dd>
+                </div>
+              )
+            })}
           </dl>
         </section>
       ))}
@@ -68,11 +90,24 @@ export function SummaryStep() {
         <p className="summary-total">
           Razem <strong>{formatPln(price.total)}</strong>
         </p>
-        <button type="button" className="button-primary" onClick={download}>
+        <button type="button" className="button-primary" onClick={() => setInquiring(true)}>
+          Wyślij zapytanie
+        </button>
+        <button type="button" className="button-secondary" onClick={download}>
           Pobierz listę formatek (CSV)
         </button>
         <CopyLinkButton />
+        <ShareButton title={title} />
       </section>
+
+      <InquiryDialog
+        open={inquiring}
+        title={title}
+        groups={groups}
+        price={formatPln(price.total)}
+        link={shareUrl(config, window.location)}
+        onClose={() => setInquiring(false)}
+      />
     </>
   )
 }

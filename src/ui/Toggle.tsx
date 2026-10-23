@@ -2,10 +2,11 @@ interface ToggleProps {
   label: string
   checked: boolean
   hint?: string
+  note?: string
   onChange: (checked: boolean) => void
 }
 
-export function Toggle({ label, checked, hint, onChange }: ToggleProps) {
+export function Toggle({ label, checked, hint, note, onChange }: ToggleProps) {
   return (
     <div className="field">
       <label className="toggle">
@@ -17,6 +18,7 @@ export function Toggle({ label, checked, hint, onChange }: ToggleProps) {
         />
         <span className="toggle-track" aria-hidden="true" />
         <span className="toggle-label">{label}</span>
+        {note && <span className="toggle-note">{note}</span>}
       </label>
       {hint && <p className="field-hint">{hint}</p>}
     </div>

@@ -50,3 +50,36 @@ test('fits the screen without horizontal scrolling', async ({ page }) => {
   )
   expect(overflow).toBeLessThanOrEqual(0)
 })
+
+test('shows what each option adds to the price', async ({ page }) => {
+  await page.getByRole('tab', { name: /Szuflady/ }).click()
+  const tipOn = page.locator('.segment', { hasText: 'Otwieranie naciśnięciem (Tip-On)' })
+  await expect(tipOn.locator('.segment-note')).toHaveText(/^\+\d/)
+
+  await page.getByRole('button', { name: 'Co oznaczają opcje: Otwieranie' }).click()
+  await expect(page.getByText('Szuflada domyka się sama')).toBeVisible()
+})
+
+test('validates the inquiry before opening the mail client', async ({ page }) => {
+  await page.getByRole('tab', { name: /Podsumowanie/ }).click()
+  await page.getByRole('button', { name: 'Wyślij zapytanie' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Wyślij zapytanie' })
+  await dialog.getByRole('button', { name: 'Przygotuj wiadomość' }).click()
+
+  await expect(dialog.getByText('Podaj imię i nazwisko.')).toBeVisible()
+  await expect(dialog.getByText('Podaj poprawny adres e-mail.')).toBeVisible()
+})
+
+test('switches camera views', async ({ page }) => {
+  const front = page.getByRole('button', { name: 'Przód', exact: true })
+  await front.click()
+  await expect(front).toHaveAttribute('aria-pressed', 'true')
+})
+
+test('saves a picture of the 3D view', async ({ page }) => {
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('button', { name: 'Zapisz zdjęcie' }).click(),
+  ])
+  expect(download.suggestedFilename()).toBe('szafka-600x500x500.png')
+})

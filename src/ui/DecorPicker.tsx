@@ -5,10 +5,11 @@ interface DecorPickerProps {
   label: string
   value: string
   decors: readonly Decor[]
+  noteFor?: (id: string) => string | undefined
   onChange: (id: string) => void
 }
 
-export function DecorPicker({ label, value, decors, onChange }: DecorPickerProps) {
+export function DecorPicker({ label, value, decors, noteFor, onChange }: DecorPickerProps) {
   const name = useId()
   const selected = decors.find((decor) => decor.id === value)
 
@@ -37,6 +38,7 @@ export function DecorPicker({ label, value, decors, onChange }: DecorPickerProps
             <span className="swatch-board" aria-hidden="true" />
             <span className="swatch-name">{decor.name}</span>
             <span className="swatch-code">{decor.code}</span>
+            {noteFor?.(decor.id) && <span className="swatch-note">{noteFor(decor.id)}</span>}
           </label>
         ))}
       </div>

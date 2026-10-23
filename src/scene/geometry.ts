@@ -97,8 +97,19 @@ export function cameraDistance(config: Config, fov = CAMERA_FOV): number {
   return (radius / Math.sin(((fov / 2) * Math.PI) / 180)) * CAMERA_PADDING
 }
 
-export function cameraPosition(distance: number): Vec3Tuple {
-  const [x, y, z] = CAMERA_DIRECTION
+export const CAMERA_VIEWS = ['perspective', 'front', 'side', 'top'] as const
+
+export type CameraView = (typeof CAMERA_VIEWS)[number]
+
+const VIEW_DIRECTIONS: Record<CameraView, Vec3Tuple> = {
+  perspective: CAMERA_DIRECTION,
+  front: [0, 0.1, 1],
+  side: [1, 0.1, 0],
+  top: [0, 1, 0.02],
+}
+
+export function cameraPosition(distance: number, view: CameraView = 'perspective'): Vec3Tuple {
+  const [x, y, z] = VIEW_DIRECTIONS[view]
   const length = Math.hypot(x, y, z)
   return [(x / length) * distance, (y / length) * distance, (z / length) * distance]
 }

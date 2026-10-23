@@ -140,6 +140,19 @@ every milestone.
       price + URL update, CSV download, reset confirmation, no horizontal
       scroll) on desktop and 375 px; separate `e2e` CI job. README rewritten
       for reviewers. 355 unit + 10 e2e tests.
+- [x] **10b. Summary extras** (after reviewing the example project the
+      recruiter sent): price change next to every option and every summary row
+      (`priceDelta` = normalized price with the option minus without it, so
+      rules and side effects are included; Tandem shows +20 PLN because its
+      wooden sides are extra panels); "?" hints explaining options;
+      "Wyślij zapytanie" — Zod-validated form that opens the mail client with
+      the configuration, price and link (no backend; shop address is the
+      `INQUIRY_EMAIL` placeholder); native "Udostępnij" where supported; camera
+      views (3D / front / side / top), PNG snapshot (dimension labels are
+      HTML, so they are drawn onto the image too — lines without numbers looked
+      broken), fullscreen. Perf: the
+      canvas renders on demand and the contact shadow is computed once per
+      shape — e2e tests went from ~25 s to 1–5 s each. 382 unit + 16 e2e.
 - [ ] Deploy to Vercel (owner imports the repo; then add the live link to
       the README)
 

@@ -27,6 +27,12 @@ The UI is in Polish (the target market); code and documentation are in English.
   labour, margin included per line, so the breakdown always adds up.
 - **Rules** — invalid combinations are corrected, never rejected: the app
   explains each automatic change ("drawer shortened to 400 mm because…").
+- **Price per option** — every choice and every summary row shows what it
+  adds or saves, computed from the real price engine, not a lookup table.
+- **Summary** — grouped configuration, cut list, CSV download, an inquiry form
+  that opens the mail client with the configuration and link (no backend; set
+  `INQUIRY_EMAIL` in `src/features/inquiry/inquiry.ts`), sharing.
+- **3D tools** — camera views, PNG snapshot, fullscreen, drawers open on click.
 - **Sharing** — the configuration lives in the URL and in localStorage.
 
 ## Architecture
@@ -81,7 +87,8 @@ The first `pnpm test:e2e` needs a browser: `pnpm exec playwright install chromiu
 - Pricing tests check calibration ranges against the reference shop instead of
   exact amounts, so tuning a rate does not break them.
 - Playwright covers loading, a price update, the CSV download, the reset
-  confirmation and the mobile layout.
+  confirmation, option prices and hints, inquiry validation, camera views and
+  the mobile layout.
 - CI runs lint, formatting, types, unit tests and the build, plus a separate
   Playwright job.
 
