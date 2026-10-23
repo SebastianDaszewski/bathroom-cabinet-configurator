@@ -22,7 +22,7 @@ export const applyDrawerLengths: Rule = (input) => {
       field: `drawers.${id}.length`,
       from: length,
       to: fallback,
-      reason: `A ${length} mm drawer needs a cabinet at least ${length + DRAWER_DEPTH_CLEARANCE} mm deep.`,
+      reason: `Szuflada ${length} mm wymaga szafki o głębokości min. ${length + DRAWER_DEPTH_CLEARANCE} mm.`,
     })
   }
 

@@ -89,7 +89,7 @@ function carcassPanels(config: Config): Panel[] {
     place({
       ...carcass,
       id: 'side-left',
-      name: 'Side',
+      name: 'Bok',
       length: height,
       width: depth,
       axes: ['y', 'z', 'x'],
@@ -99,7 +99,7 @@ function carcassPanels(config: Config): Panel[] {
     place({
       ...carcass,
       id: 'side-right',
-      name: 'Side',
+      name: 'Bok',
       length: height,
       width: depth,
       axes: ['y', 'z', 'x'],
@@ -109,7 +109,7 @@ function carcassPanels(config: Config): Panel[] {
     place({
       ...carcass,
       id: 'bottom',
-      name: 'Bottom',
+      name: 'Wieniec dolny',
       length: inner,
       width: depth,
       axes: ['x', 'z', 'y'],
@@ -119,7 +119,7 @@ function carcassPanels(config: Config): Panel[] {
     place({
       ...carcass,
       id: 'rail-front',
-      name: 'Top rail (front)',
+      name: 'Listwa górna przednia',
       length: inner,
       width: TOP_RAIL_WIDTH,
       axes: ['x', 'z', 'y'],
@@ -129,7 +129,7 @@ function carcassPanels(config: Config): Panel[] {
     place({
       ...carcass,
       id: 'rail-back',
-      name: 'Top rail (back)',
+      name: 'Listwa górna tylna',
       length: inner,
       width: TOP_RAIL_WIDTH,
       axes: ['x', 'z', 'y'],
@@ -137,7 +137,7 @@ function carcassPanels(config: Config): Panel[] {
     }),
     place({
       id: 'back',
-      name: 'Back',
+      name: 'Plecy',
       material: 'back',
       board: 'hdf',
       decor: null,
@@ -183,7 +183,7 @@ function frontPanels(config: Config): Panel[] {
   return DRAWER_IDS.map((id) =>
     place({
       id: `front-${id}`,
-      name: 'Drawer front',
+      name: 'Front szuflady',
       material: 'front',
       board: config.frontBoard,
       decor: config.frontDecor,
@@ -220,7 +220,7 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
     place({
       ...material,
       id: `drawer-${id}-bottom`,
-      name: 'Drawer bottom',
+      name: 'Dno szuflady',
       length: bottomLength,
       width: drawer.length - DRAWER_BOTTOM_SHORTENING,
       thickness: dt,
@@ -241,7 +241,7 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
     place({
       ...material,
       id: `drawer-${id}-back`,
-      name: 'Drawer back',
+      name: 'Tył szuflady',
       length: backLength,
       width: backHeight,
       thickness: dt,
@@ -271,7 +271,7 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
       place({
         ...material,
         id: `drawer-${id}-side-${index === 0 ? 'left' : 'right'}`,
-        name: 'Drawer side',
+        name: 'Bok szuflady',
         length: drawer.length,
         width: boxHeight,
         thickness: dt,

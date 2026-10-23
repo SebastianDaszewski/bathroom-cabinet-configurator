@@ -26,6 +26,7 @@ every milestone.
 - The user commits, pushes and merges. Branch names, commits and PR titles in
   English.
 - Ask before using the `frontend-design` plugin for UI/styling work.
+- The UI is in Polish (mandatory); code identifiers and docs in English.
 - Show a plan before each milestone; small PRs, one milestone each.
 
 ## Milestones
@@ -68,7 +69,17 @@ every milestone.
       chunk 317 kB (97 kB gzip), Three.js chunk 958 kB (255 kB gzip); chunk
       warning limit raised to 1000 kB. Only pure helpers are unit-tested
       (229 tests); the scene itself gets a Playwright smoke test in M8.
-- [ ] 6. Stepper UI + store + URL sync
+- [x] **6. Stepper UI + store + URL sync** — all user-facing domain strings
+      translated to Polish. `state/`: vanilla Zustand store (every update goes
+      through `normalize`, keeps the latest adjustments), URL encode/decode of
+      non-default fields, localStorage persistence (URL wins), debounced
+      `replaceState`. `ui/`: NumberField (slider + draft text input committed
+      on blur/Enter), ChoiceField (radio segments with disabled options),
+      Toggle, DecorPicker (board-sample swatches). `features/`: 4-step
+      stepper, price panel (total, adjustments, breakdown, copy link, reset).
+      Visual direction (frontend-design): cool bathroom stone + tile-glaze
+      teal, Bricolage Grotesque + Instrument Sans (Google Fonts). Checked in
+      Chrome on desktop; mobile layout still to be verified in M8. 263 tests.
 - [ ] 7. Cut-outs & handles in 3D, open-drawers toggle
 - [ ] 8. Summary, CSV export, responsive polish, deploy
 

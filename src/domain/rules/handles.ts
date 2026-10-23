@@ -5,11 +5,12 @@ import type { Rule } from './types'
 type HandleDrilling = Config['handleDrilling']
 
 export function handleDrillingBlocker(config: Config): string | null {
-  if (config.opening === 'tip-on') return 'Push-to-open (Tip-On) fronts have no handles.'
+  if (config.opening === 'tip-on')
+    return 'Fronty otwierane przez naciśnięcie (Tip-On) nie mają uchwytów.'
   if (config.frontType === 'edge-handle')
-    return 'Fronts with an edge handle have no drilled handles.'
+    return 'Fronty z uchwytem krawędziowym nie mają nawierceń pod uchwyty.'
   if (config.frontType === 'grip-groove')
-    return 'Fronts with a grip groove have no drilled handles.'
+    return 'Fronty z frezowanym uchwytem nie mają nawierceń pod uchwyty.'
   return null
 }
 
@@ -68,7 +69,7 @@ export const applyDoubleHandleWidth: Rule = (config) => {
         field: 'handleDrilling',
         from: 'double',
         to: 'single',
-        reason: `Double handles need a cabinet at least ${DOUBLE_HANDLE_MIN_WIDTH} mm wide.`,
+        reason: `Podwójne uchwyty wymagają szafki o szerokości min. ${DOUBLE_HANDLE_MIN_WIDTH} mm.`,
       },
     ],
   }
@@ -86,7 +87,7 @@ export const applyHandleSpacing: Rule = (config) => {
         field: 'handleSpacing',
         from: config.handleSpacing,
         to: max,
-        reason: `A handle must stay ${HANDLE_EDGE_MARGIN} mm from the front edges; the widest spacing here is ${max} mm.`,
+        reason: `Uchwyt musi być min. ${HANDLE_EDGE_MARGIN} mm od krawędzi frontu, największy możliwy rozstaw to ${max} mm.`,
       },
     ],
   }

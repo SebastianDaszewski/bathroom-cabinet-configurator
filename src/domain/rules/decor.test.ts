@@ -26,7 +26,7 @@ describe('R9 applyDecorCompatibility', () => {
         field: 'frontDecor',
         from: 'oak-h1145',
         to: 'black-ps01',
-        reason: 'Natural oak is not available on perfectsense.',
+        reason: 'Dekor „Dąb naturalny” jest niedostępny dla materiału „PerfectSense mat”.',
       }),
     ])
   })
@@ -49,6 +49,6 @@ describe('R9 applyDecorCompatibility', () => {
     const result = applyDecorCompatibility({ ...DEFAULT_CONFIG, carcassDecor: 'gold' })
 
     expect(result.config.carcassDecor).toBe('white-w960')
-    expect(result.adjustments[0]?.reason).toBe('Unknown decor "gold".')
+    expect(result.adjustments[0]?.reason).toBe('Nieznany dekor „gold”.')
   })
 })

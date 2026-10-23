@@ -95,7 +95,7 @@ describe('buildPanels — drawers', () => {
 
   it('adds wooden sides for tandem runners', () => {
     const panels = buildPanels(config({ runner: 'tandem' }))
-    const sides = panels.filter((panel) => panel.name === 'Drawer side')
+    const sides = panels.filter((panel) => panel.name === 'Bok szuflady')
 
     expect(sides).toHaveLength(4)
     expect(dims(sides[0])).toEqual([450, 179, 16])

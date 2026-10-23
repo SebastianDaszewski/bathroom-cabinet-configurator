@@ -14,10 +14,10 @@ export interface CutListRow {
 }
 
 const EDGE_LABELS: readonly [keyof Edges, string][] = [
-  ['l1', 'L1'],
-  ['l2', 'L2'],
-  ['w1', 'W1'],
-  ['w2', 'W2'],
+  ['l1', 'D1'],
+  ['l2', 'D2'],
+  ['w1', 'S1'],
+  ['w2', 'S2'],
 ]
 
 function edgeLabel(edges: Edges): string {
@@ -40,8 +40,8 @@ function decorLabel(panel: Panel): string {
 function cutoutNotes(cutouts: readonly Cutout[]): string {
   const notches = cutouts.filter((cutout) => cutout.kind === 'notch')
   const holes = cutouts.filter((cutout) => cutout.kind === 'hole')
-  const notes = notches.map((notch) => `Siphon cut-out ${notch.length}×${notch.width}`)
-  if (holes.length > 0) notes.push(`${holes.length} holes Ø${holes[0].diameter}`)
+  const notes = notches.map((notch) => `Wycięcie pod syfon ${notch.length}×${notch.width}`)
+  if (holes.length > 0) notes.push(`Otwory Ø${holes[0].diameter}: ${holes.length} szt.`)
   return notes.join(', ')
 }
 
@@ -78,15 +78,15 @@ export function toCutList(panels: readonly Panel[]): CutListRow[] {
 }
 
 const CSV_HEADER = [
-  'Name',
-  'Material',
-  'Decor',
-  'Length (mm)',
-  'Width (mm)',
-  'Thickness (mm)',
-  'Qty',
-  'Edge banding',
-  'Notes',
+  'Nazwa',
+  'Materiał',
+  'Dekor',
+  'Długość (mm)',
+  'Szerokość (mm)',
+  'Grubość (mm)',
+  'Ilość',
+  'Okleina',
+  'Uwagi',
 ]
 
 function csvField(value: string | number): string {
@@ -110,5 +110,5 @@ export function toCsv(rows: readonly CutListRow[]): string {
     ]),
   ].map((fields) => fields.map(csvField).join(';'))
 
-  return `﻿${lines.join('\r\n')}\r\n`
+  return `\uFEFF${lines.join('\r\n')}\r\n`
 }
