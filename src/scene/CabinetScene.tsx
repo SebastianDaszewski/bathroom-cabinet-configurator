@@ -41,7 +41,7 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
       </Canvas>
       <DimensionLabels guides={guides} labels={labels} />
       <button type="button" className="scene-reset" onClick={() => setCameraKey((key) => key + 1)}>
-        Reset view
+        Przywróć widok
       </button>
     </div>
   )

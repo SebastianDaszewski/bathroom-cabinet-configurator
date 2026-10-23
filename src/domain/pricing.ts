@@ -7,7 +7,7 @@ export const PRICE_CATEGORIES = ['boards', 'edging', 'hardware', 'machining', 'l
 
 export type PriceCategory = (typeof PRICE_CATEGORIES)[number]
 
-export type PriceUnit = 'm²' | 'm' | 'pcs'
+export type PriceUnit = 'm²' | 'm' | 'szt.'
 
 export interface PriceLine {
   category: PriceCategory
@@ -26,10 +26,10 @@ export interface Price {
 const MM_PER_M = 1000
 
 const MATERIAL_LABELS: Record<PanelMaterial, string> = {
-  carcass: 'Carcass',
-  back: 'Back',
-  front: 'Fronts',
-  drawer: 'Drawer boxes',
+  carcass: 'Korpus',
+  back: 'Plecy',
+  front: 'Fronty',
+  drawer: 'Szuflady',
 }
 
 function line(
@@ -74,7 +74,8 @@ function boardLabel(panel: Panel): string {
       ? 'HDF'
       : (BOARDS.find((candidate) => candidate.id === panel.board)?.name ?? panel.board)
   const decor = panel.decor ? findDecor(panel.decor) : undefined
-  return [MATERIAL_LABELS[panel.material], board, decor?.code].filter(Boolean).join(' · ')
+  const material = [board, decor?.code].filter(Boolean).join(' ')
+  return `${MATERIAL_LABELS[panel.material]}: ${material}`
 }
 
 function boardLines(panels: readonly Panel[]): PriceLine[] {
@@ -94,7 +95,7 @@ function boardLines(panels: readonly Panel[]): PriceLine[] {
 
 function edgingLines(panels: readonly Panel[]): PriceLine[] {
   const length = panels.reduce((sum, panel) => sum + bandedLength(panel), 0)
-  return [line('edging', 'Edge banding', length, 'm', PRICING.edgingPerM)]
+  return [line('edging', 'Okleina', length, 'm', PRICING.edgingPerM)]
 }
 
 function frontsLength(panels: readonly Panel[]): number {
@@ -115,20 +116,22 @@ function hardwareLines(config: Config, panels: readonly Panel[]): PriceLine[] {
   const runner = findRunner(config.runner)
   const handles = holeCount(panels) / 2
   const lines = [
-    line('hardware', `Runners · ${runner.name}`, drawers, 'pcs', PRICING.runnerPair[runner.id]),
+    line('hardware', `Prowadnice: ${runner.name}`, drawers, 'szt.', PRICING.runnerPair[runner.id]),
   ]
 
   if (config.opening === 'tip-on') {
-    lines.push(line('hardware', 'Tip-On push-to-open', drawers, 'pcs', PRICING.tipOnUnit))
+    lines.push(
+      line('hardware', 'Tip-On (otwieranie przez naciśnięcie)', drawers, 'szt.', PRICING.tipOnUnit),
+    )
   }
   if (handles > 0) {
-    lines.push(line('hardware', 'Handles', handles, 'pcs', PRICING.handle))
+    lines.push(line('hardware', 'Uchwyty', handles, 'szt.', PRICING.handle))
   }
   if (config.frontType === 'edge-handle') {
     lines.push(
       line(
         'hardware',
-        'Edge handle profile',
+        'Profil uchwytu krawędziowego',
         frontsLength(panels),
         'm',
         PRICING.edgeHandleProfilePerM,
@@ -145,14 +148,14 @@ function machiningLines(config: Config, panels: readonly Panel[]): PriceLine[] {
   const lines: PriceLine[] = []
 
   if (siphonCuts > 0) {
-    lines.push(line('machining', 'Siphon cut-outs', siphonCuts, 'pcs', PRICING.siphonCut))
+    lines.push(line('machining', 'Wycięcia pod syfon', siphonCuts, 'szt.', PRICING.siphonCut))
   }
   if (holes > 0) {
-    lines.push(line('machining', 'Handle holes', holes, 'pcs', PRICING.hole))
+    lines.push(line('machining', 'Otwory pod uchwyty', holes, 'szt.', PRICING.hole))
   }
   if (config.frontType === 'grip-groove') {
     lines.push(
-      line('machining', 'Grip groove milling', frontsLength(panels), 'm', PRICING.gripGroovePerM),
+      line('machining', 'Frezowanie uchwytu', frontsLength(panels), 'm', PRICING.gripGroovePerM),
     )
   }
 
@@ -161,8 +164,8 @@ function machiningLines(config: Config, panels: readonly Panel[]): PriceLine[] {
 
 function labourLines(panels: readonly Panel[]): PriceLine[] {
   return [
-    line('labour', 'Assembly and packing', 1, 'pcs', PRICING.labourBase),
-    line('labour', 'Cutting and edging', panels.length, 'pcs', PRICING.labourPerPanel),
+    line('labour', 'Montaż i pakowanie', 1, 'szt.', PRICING.labourBase),
+    line('labour', 'Cięcie i oklejanie', panels.length, 'szt.', PRICING.labourPerPanel),
   ]
 }
 

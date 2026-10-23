@@ -162,7 +162,7 @@ edges: { l1, l2, w1, w2 }, axes, position, size, cutouts[] }`.
 
 Cut list CSV: `;` separator, UTF-8 with BOM, CRLF (opens correctly in Excel
 with a Polish locale). Columns: name, material, decor, length, width,
-thickness, qty, edge banding (`L1 L2 W1 W2`), notes (cut-outs and holes).
+thickness, qty, edge banding (`D1 D2 S1 S2` — długość / szerokość), notes (cut-outs and holes).
 
 ---
 
@@ -210,6 +210,14 @@ machining / labour).
 - Right / bottom on mobile: price, breakdown, warnings from rules,
   buttons: _Copy link_, _Export cut list (CSV)_.
 - Responsive down to 375 px; 3D view on top on mobile.
+- The UI is in Polish, including every user-facing string produced by the
+  domain (adjustment reasons, catalogue names, price lines, cut list). Code
+  identifiers and docs stay in English. No i18n framework.
+- Adjustments from `normalize()` are shown for the latest change only (or once
+  after loading a link with invalid values) and can be dismissed.
+- Configuration is kept in the URL (only fields that differ from the defaults,
+  e.g. `?width=800&drawers.top.length=400`) and in localStorage; the URL wins on
+  load.
 
 ---
 

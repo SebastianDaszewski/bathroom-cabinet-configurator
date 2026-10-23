@@ -19,7 +19,7 @@ export const applySiphonCut: Rule = (config) => {
         field: 'siphonOffset',
         from: config.siphonOffset,
         to: max,
-        reason: `The cut-out must leave ${SIPHON_SIDE_MARGIN} mm of drawer side on each side.`,
+        reason: `Wycięcie musi zostawić min. ${SIPHON_SIDE_MARGIN} mm boku szuflady z każdej strony.`,
       },
     ],
   }
@@ -49,7 +49,7 @@ export const applySiphonPosition: Rule = (config) => {
         field: 'siphonX',
         from: config.siphonX,
         to: siphonX,
-        reason: `The cut-out centre must be between ${range.min} and ${range.max} mm from the left side.`,
+        reason: `Środek wycięcia musi leżeć ${range.min}–${range.max} mm od lewego boku.`,
       },
     ],
   }

@@ -25,10 +25,10 @@ export interface Runner {
 }
 
 export const BOARDS: readonly Board[] = [
-  { id: 'chipboard', name: 'Laminated chipboard' },
-  { id: 'acrylic', name: 'Acrylic high-gloss' },
-  { id: 'mdf', name: 'Lacquered MDF' },
-  { id: 'perfectsense', name: 'PerfectSense matt' },
+  { id: 'chipboard', name: 'Płyta laminowana' },
+  { id: 'acrylic', name: 'Akryl wysoki połysk' },
+  { id: 'mdf', name: 'MDF lakierowany' },
+  { id: 'perfectsense', name: 'PerfectSense mat' },
 ]
 
 export const DRAWER_BOARD: BoardType = 'chipboard'
@@ -36,7 +36,7 @@ export const DRAWER_BOARD: BoardType = 'chipboard'
 export const DECORS: readonly Decor[] = [
   {
     id: 'white-w960',
-    name: 'Classic white',
+    name: 'Biały klasyczny',
     code: 'W960',
     color: '#f2f1ec',
     boards: ['chipboard', 'acrylic', 'mdf'],
@@ -44,7 +44,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'grey-u732',
-    name: 'Dust grey',
+    name: 'Szary pyłowy',
     code: 'U732',
     color: '#8d8f8c',
     boards: ['chipboard', 'acrylic', 'mdf'],
@@ -52,7 +52,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'graphite-u961',
-    name: 'Graphite',
+    name: 'Grafit',
     code: 'U961',
     color: '#3d3f41',
     boards: ['chipboard', 'mdf'],
@@ -60,7 +60,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'oak-h1145',
-    name: 'Natural oak',
+    name: 'Dąb naturalny',
     code: 'H1145',
     color: '#b8915f',
     boards: ['chipboard'],
@@ -68,7 +68,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'walnut-h3734',
-    name: 'Walnut',
+    name: 'Orzech',
     code: 'H3734',
     color: '#7b5a3e',
     boards: ['chipboard'],
@@ -76,7 +76,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'concrete-f186',
-    name: 'Light concrete',
+    name: 'Jasny beton',
     code: 'F186',
     color: '#a7a6a1',
     boards: ['chipboard'],
@@ -84,7 +84,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'black-ps01',
-    name: 'Matt black',
+    name: 'Czarny mat',
     code: 'PS01',
     color: '#1f1f1f',
     boards: ['perfectsense'],
@@ -92,7 +92,7 @@ export const DECORS: readonly Decor[] = [
   },
   {
     id: 'greige-ps02',
-    name: 'Matt greige',
+    name: 'Greige mat',
     code: 'PS02',
     color: '#b5aca1',
     boards: ['perfectsense'],
@@ -103,7 +103,7 @@ export const DECORS: readonly Decor[] = [
 export const RUNNERS: readonly Runner[] = [
   {
     id: 'tandem',
-    name: 'Concealed runners (Tandem)',
+    name: 'Prowadnice ukryte (Tandem)',
     woodenSides: true,
     sideClearance: 5,
     bottomDeduction: 42,
@@ -111,13 +111,17 @@ export const RUNNERS: readonly Runner[] = [
   },
   {
     id: 'blum',
-    name: 'Metal drawer box (Blum)',
+    name: 'Szuflada metalowa (Blum)',
     woodenSides: false,
     sideClearance: 0,
     bottomDeduction: 75,
     backDeduction: 87,
   },
 ]
+
+export function findBoard(id: BoardType): Board {
+  return BOARDS.find((board) => board.id === id) ?? BOARDS[0]
+}
 
 export function findRunner(id: RunnerType): Runner {
   return RUNNERS.find((runner) => runner.id === id) ?? RUNNERS[0]

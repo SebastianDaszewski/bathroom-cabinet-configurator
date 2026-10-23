@@ -1,4 +1,4 @@
-import { DECORS, DRAWER_BOARD, findDecor, type Decor } from '../catalog'
+import { DECORS, DRAWER_BOARD, findBoard, findDecor, type Decor } from '../catalog'
 import type { BoardType, Config } from '../schema'
 import type { Adjustment, Rule } from './types'
 
@@ -33,8 +33,8 @@ export const applyDecorCompatibility: Rule = (input) => {
       from: input[field],
       to: fallback.id,
       reason: decor
-        ? `${decor.name} is not available on ${board}.`
-        : `Unknown decor "${input[field]}".`,
+        ? `Dekor „${decor.name}” jest niedostępny dla materiału „${findBoard(board).name}”.`
+        : `Nieznany dekor „${input[field]}”.`,
     })
   }
 

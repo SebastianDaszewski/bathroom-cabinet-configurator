@@ -45,7 +45,7 @@ describe('price — totals', () => {
   })
 
   it('includes the margin in every line', () => {
-    expect(find(quote(), 'Assembly')).toMatchObject({ quantity: 1, amount: grosze(230) })
+    expect(find(quote(), 'Montaż')).toMatchObject({ quantity: 1, amount: grosze(230) })
   })
 
   it('groups the breakdown by category', () => {
@@ -59,30 +59,30 @@ describe('price — totals', () => {
 
 describe('price — boards and edging', () => {
   it('prices each material group by area', () => {
-    const carcass = find(quote(), 'Carcass')
+    const carcass = find(quote(), 'Korpus')
     expect(carcass).toMatchObject({ unit: 'm²', quantity: 0.895, unitPrice: grosze(110) })
   })
 
   it('applies the decor modifier', () => {
-    const fronts = find(quote(), 'Fronts')
-    expect(fronts?.label).toBe('Fronts · Laminated chipboard · H1145')
+    const fronts = find(quote(), 'Fronty')
+    expect(fronts?.label).toBe('Fronty: Płyta laminowana H1145')
     expect(fronts?.unitPrice).toBe(grosze(110 * 1.15))
   })
 
   it('prices fronts by board type', () => {
-    const plain = find(quote(), 'Fronts')?.amount ?? 0
-    const gloss = find(quote({ frontBoard: 'acrylic', frontDecor: 'white-w960' }), 'Fronts')
+    const plain = find(quote(), 'Fronty')?.amount ?? 0
+    const gloss = find(quote({ frontBoard: 'acrylic', frontDecor: 'white-w960' }), 'Fronty')
     expect(gloss?.amount).toBeGreaterThan(plain)
   })
 
   it('measures edge banding from the panel edges', () => {
-    expect(find(quote(), 'Edge banding')).toMatchObject({ unit: 'm', quantity: 6.46 })
+    expect(find(quote(), 'Okleina')).toMatchObject({ unit: 'm', quantity: 6.46 })
   })
 
   it('makes a wider cabinet more expensive in every board group', () => {
     const narrow = quote({ width: 500 })
     const wide = quote({ width: 1200 })
-    for (const label of ['Carcass', 'Back', 'Fronts', 'Drawer boxes', 'Edge banding']) {
+    for (const label of ['Korpus', 'Plecy', 'Fronty', 'Szuflady', 'Okleina']) {
       expect(find(wide, label)?.amount).toBeGreaterThan(find(narrow, label)?.amount ?? 0)
     }
   })
@@ -90,8 +90,8 @@ describe('price — boards and edging', () => {
 
 describe('price — hardware and machining', () => {
   it('charges a runner pair per drawer', () => {
-    expect(find(quote(), 'Runners')).toMatchObject({ quantity: 2, unitPrice: grosze(180) })
-    expect(find(quote({ runner: 'tandem' }), 'Runners')?.unitPrice).toBe(grosze(150))
+    expect(find(quote(), 'Prowadnice')).toMatchObject({ quantity: 2, unitPrice: grosze(180) })
+    expect(find(quote({ runner: 'tandem' }), 'Prowadnice')?.unitPrice).toBe(grosze(150))
   })
 
   it('adds Tip-On units only for push-to-open', () => {
@@ -101,43 +101,43 @@ describe('price — hardware and machining', () => {
 
   it('counts handles and holes from the drilling', () => {
     const single = quote({ handleDrilling: 'single' })
-    expect(find(single, 'Handles')?.quantity).toBe(2)
-    expect(find(single, 'Handle holes')?.quantity).toBe(4)
+    expect(find(single, 'Uchwyty')?.quantity).toBe(2)
+    expect(find(single, 'Otwory')?.quantity).toBe(4)
 
     const double = quote({ width: 900, handleDrilling: 'double' })
-    expect(find(double, 'Handles')?.quantity).toBe(4)
-    expect(find(double, 'Handle holes')?.quantity).toBe(8)
+    expect(find(double, 'Uchwyty')?.quantity).toBe(4)
+    expect(find(double, 'Otwory')?.quantity).toBe(8)
   })
 
   it('has no handle lines without drilling', () => {
-    expect(find(quote(), 'Handles')).toBeUndefined()
-    expect(find(quote(), 'Handle holes')).toBeUndefined()
+    expect(find(quote(), 'Uchwyty')).toBeUndefined()
+    expect(find(quote(), 'Otwory')).toBeUndefined()
   })
 
   it('charges one siphon cut-out per drawer that has one', () => {
-    expect(find(quote(), 'Siphon')?.quantity).toBe(1)
+    expect(find(quote(), 'Wycięcia')?.quantity).toBe(1)
     const both = quote({
       drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 450, siphonCut: true } },
     })
-    expect(find(both, 'Siphon')?.quantity).toBe(2)
+    expect(find(both, 'Wycięcia')?.quantity).toBe(2)
     const none = quote({
       drawers: {
         top: { length: 450, siphonCut: false },
         bottom: { length: 450, siphonCut: false },
       },
     })
-    expect(find(none, 'Siphon')).toBeUndefined()
+    expect(find(none, 'Wycięcia')).toBeUndefined()
   })
 
   it('prices the edge handle profile by front length', () => {
-    expect(find(quote({ frontType: 'edge-handle' }), 'Edge handle profile')).toMatchObject({
+    expect(find(quote({ frontType: 'edge-handle' }), 'Profil uchwytu')).toMatchObject({
       unit: 'm',
       quantity: 1.192,
     })
   })
 
   it('prices grip groove milling by front length', () => {
-    expect(find(quote({ frontType: 'grip-groove' }), 'Grip groove')).toMatchObject({
+    expect(find(quote({ frontType: 'grip-groove' }), 'Frezowanie')).toMatchObject({
       category: 'machining',
       quantity: 1.192,
     })
@@ -146,7 +146,7 @@ describe('price — hardware and machining', () => {
 
 describe('price — labour', () => {
   it('charges per panel', () => {
-    expect(find(quote(), 'Cutting')?.quantity).toBe(12)
-    expect(find(quote({ runner: 'tandem' }), 'Cutting')?.quantity).toBe(16)
+    expect(find(quote(), 'Cięcie')?.quantity).toBe(12)
+    expect(find(quote({ runner: 'tandem' }), 'Cięcie')?.quantity).toBe(16)
   })
 })

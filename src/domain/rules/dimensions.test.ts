@@ -58,7 +58,7 @@ describe('R1 clampDimensions', () => {
   it('snaps handle spacing to a multiple of 32', () => {
     const result = clampDimensions({ ...DEFAULT_CONFIG, handleSpacing: 130 })
     expect(result.config.handleSpacing).toBe(128)
-    expect(result.adjustments[0]?.reason).toContain('steps of 32')
+    expect(result.adjustments[0]?.reason).toContain('co 32 mm')
   })
 
   it('does not mutate the input', () => {

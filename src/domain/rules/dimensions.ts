@@ -29,8 +29,8 @@ export const clampDimensions: Rule = (input) => {
       from: input[field],
       to: value,
       reason:
-        `Allowed range is ${limits.min}–${limits.max} mm` +
-        (limits.step > 1 ? ` in steps of ${limits.step} mm.` : '.'),
+        `Dozwolony zakres: ${limits.min}–${limits.max} mm` +
+        (limits.step > 1 ? `, co ${limits.step} mm.` : '.'),
     })
   }
 

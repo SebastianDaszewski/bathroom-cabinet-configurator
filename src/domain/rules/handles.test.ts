@@ -15,8 +15,8 @@ const config = (overrides: Partial<Config>): Config => ({ ...DEFAULT_CONFIG, ...
 describe('R4 handle compatibility', () => {
   it.each([
     [{ opening: 'tip-on' }, 'Tip-On'],
-    [{ frontType: 'edge-handle' }, 'edge handle'],
-    [{ frontType: 'grip-groove' }, 'grip groove'],
+    [{ frontType: 'edge-handle' }, 'uchwytem krawędziowym'],
+    [{ frontType: 'grip-groove' }, 'frezowanym uchwytem'],
   ] as const)('%j blocks handle drilling', (overrides, reason) => {
     expect(handleDrillingBlocker(config(overrides))).toContain(reason)
     expect(allowedHandleDrillings(config({ ...overrides, width: 1000 }))).toEqual(['none'])
