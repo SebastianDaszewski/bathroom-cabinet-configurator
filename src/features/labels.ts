@@ -46,6 +46,41 @@ export const HANDLE_POSITION_LABELS: Record<Config['handlePosition'], string> = 
   center: 'Na środku',
 }
 
+export const BOARD_DESCRIPTIONS: Record<string, string> = {
+  chipboard: 'Płyta wiórowa laminowana: odporna, łatwa w utrzymaniu i najtańsza.',
+  acrylic: 'Wysoki połysk na płycie, łatwy do umycia, widać na nim odciski palców.',
+  mdf: 'Gładka płyta MDF o jednolitej powierzchni, także na krawędziach.',
+  perfectsense: 'Głęboki, aksamitny mat odporny na odciski palców.',
+}
+
+export const RUNNER_DESCRIPTIONS: Record<Config['runner'], string> = {
+  tandem: 'Szuflada z płyty na prowadnicach schowanych pod dnem. Boki szuflady są z płyty.',
+  blum: 'Smukła metalowa skrzynka szuflady ze stalowymi bokami, bardzo stabilna.',
+}
+
+export const OPENING_DESCRIPTIONS: Record<Config['opening'], string> = {
+  blumotion: 'Szuflada domyka się sama, cicho i bez trzaskania.',
+  'tip-on': 'Bez uchwytów: lekkie naciśnięcie frontu wysuwa szufladę.',
+}
+
+export const FRONT_TYPE_DESCRIPTIONS: Record<Config['frontType'], string> = {
+  standard: 'Płaski front, uchwyty można nawiercić osobno.',
+  'grip-groove': 'Frezowane wcięcie przy górnej krawędzi frontu służy za uchwyt.',
+  'edge-handle': 'Aluminiowy profil na górnej krawędzi frontu, w zestawie.',
+  'edge-handle-ready': 'Front skrócony pod profil, który kupujesz i montujesz sam.',
+}
+
+export const HANDLE_DRILLING_DESCRIPTIONS: Record<Config['handleDrilling'], string> = {
+  none: 'Fronty bez otworów.',
+  single: 'Otwory pod jeden uchwyt na środku każdego frontu.',
+  double: 'Otwory pod dwa uchwyty na każdym froncie, do szerokich szafek.',
+}
+
+export const TOP_THICKENING_DESCRIPTIONS: Record<Config['topThickening'], string> = {
+  none: 'Blat z jednej płyty 18 mm.',
+  double: 'Dwie sklejone płyty z jedną okleiną, krawędź 36 mm wygląda masywniej.',
+}
+
 export const PRICE_CATEGORY_LABELS: Record<PriceCategory, string> = {
   boards: 'Płyty',
   edging: 'Okleina',

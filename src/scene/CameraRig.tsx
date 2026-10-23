@@ -2,9 +2,9 @@ import { OrbitControls } from '@react-three/drei'
 import { useThree } from '@react-three/fiber'
 import { useEffect, useRef, type ComponentRef } from 'react'
 import { Vector3 } from 'three'
-import { cameraPosition } from './geometry'
+import { cameraPosition, type CameraView } from './geometry'
 
-export function CameraRig({ distance }: { distance: number }) {
+export function CameraRig({ distance, view }: { distance: number; view: CameraView }) {
   const camera = useThree((state) => state.camera)
   const controls = useRef<ComponentRef<typeof OrbitControls>>(null)
   const placed = useRef(false)
@@ -16,11 +16,11 @@ export function CameraRig({ distance }: { distance: number }) {
       camera.position.copy(target).add(direction.multiplyScalar(distance))
     } else {
       target.set(0, 0, 0)
-      camera.position.set(...cameraPosition(distance))
+      camera.position.set(...cameraPosition(distance, view))
       placed.current = true
     }
     controls.current?.update()
-  }, [camera, distance])
+  }, [camera, distance, view])
 
   return (
     <OrbitControls

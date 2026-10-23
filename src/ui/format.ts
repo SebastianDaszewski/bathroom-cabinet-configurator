@@ -14,3 +14,17 @@ export function formatPln(grosze: number): string {
 export function formatQuantity(quantity: number, unit: string): string {
   return `${DECIMAL.format(quantity)} ${unit}`
 }
+
+export function pluralPl(count: number, [one, few, many]: [string, string, string]): string {
+  if (count === 1) return one
+  const lastTwo = count % 100
+  const last = count % 10
+  if (last >= 2 && last <= 4 && (lastTwo < 12 || lastTwo > 14)) return few
+  return many
+}
+
+export function formatPriceChange(grosze: number): string {
+  if (grosze === 0) return 'bez dopłaty'
+  const amount = formatPln(Math.abs(grosze))
+  return grosze > 0 ? `+${amount}` : `−${amount}`
+}

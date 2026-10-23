@@ -1,9 +1,11 @@
-import { useId } from 'react'
+import { useId, useState } from 'react'
 
 export interface Choice<T extends string | number> {
   value: T
   label: string
   disabled?: boolean
+  note?: string
+  description?: string
 }
 
 interface ChoiceFieldProps<T extends string | number> {
@@ -22,10 +24,36 @@ export function ChoiceField<T extends string | number>({
   onChange,
 }: ChoiceFieldProps<T>) {
   const name = useId()
+  const [infoOpen, setInfoOpen] = useState(false)
+  const described = options.filter((option) => option.description)
 
   return (
     <fieldset className="field">
-      <legend className="field-label">{label}</legend>
+      <legend className="field-label">
+        {label}
+        {described.length > 0 && (
+          <button
+            type="button"
+            className="info-toggle"
+            aria-expanded={infoOpen}
+            aria-controls={`${name}-info`}
+            aria-label={`Co oznaczają opcje: ${label}`}
+            onClick={() => setInfoOpen((open) => !open)}
+          >
+            ?
+          </button>
+        )}
+      </legend>
+      {infoOpen && (
+        <dl className="field-info" id={`${name}-info`}>
+          {described.map((option) => (
+            <div key={option.value}>
+              <dt>{option.label}</dt>
+              <dd>{option.description}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
       <div className="segments">
         {options.map((option) => (
           <label
@@ -43,6 +71,7 @@ export function ChoiceField<T extends string | number>({
               onChange={() => onChange(option.value)}
             />
             <span>{option.label}</span>
+            {option.note && <span className="segment-note">{option.note}</span>}
           </label>
         ))}
       </div>

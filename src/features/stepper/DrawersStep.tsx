@@ -18,7 +18,13 @@ import { useConfigurator } from '../../state/useConfigurator'
 import { ChoiceField } from '../../ui/ChoiceField'
 import { NumberField } from '../../ui/NumberField'
 import { Toggle } from '../../ui/Toggle'
-import { OPENING_LABELS, SIPHON_POSITION_LABELS } from '../labels'
+import {
+  OPENING_DESCRIPTIONS,
+  OPENING_LABELS,
+  RUNNER_DESCRIPTIONS,
+  SIPHON_POSITION_LABELS,
+} from '../labels'
+import { priceNote } from '../priceNotes'
 
 const DRAWER_NAMES: Record<DrawerId, string> = {
   top: 'Górna szuflada',
@@ -46,7 +52,12 @@ export function DrawersStep() {
         <ChoiceField
           label="Typ"
           value={config.runner}
-          options={RUNNERS.map((runner) => ({ value: runner.id, label: runner.name }))}
+          options={RUNNERS.map((runner) => ({
+            value: runner.id,
+            label: runner.name,
+            note: priceNote(config, { runner: runner.id }),
+            description: RUNNER_DESCRIPTIONS[runner.id],
+          }))}
           onChange={(runner) => update({ runner })}
         />
         <ChoiceField
@@ -55,6 +66,8 @@ export function DrawersStep() {
           options={OPENING_TYPES.map((opening) => ({
             value: opening,
             label: OPENING_LABELS[opening],
+            note: priceNote(config, { opening }),
+            description: OPENING_DESCRIPTIONS[opening],
           }))}
           onChange={(opening) => update({ opening })}
         />
@@ -70,6 +83,11 @@ export function DrawersStep() {
               value: length,
               label: `${length} mm`,
               disabled: !allowed.includes(length),
+              note: allowed.includes(length)
+                ? priceNote(config, {
+                    drawers: { ...config.drawers, [id]: { ...config.drawers[id], length } },
+                  })
+                : undefined,
             }))}
             hint={lengthHint}
             onChange={(length) => updateDrawer(id, { length })}
@@ -78,6 +96,12 @@ export function DrawersStep() {
             label="Wycięcie pod syfon"
             hint="Osłona przy tylnej ściance, która ma przerwę na rurę."
             checked={config.drawers[id].siphonCut}
+            note={priceNote(config, {
+              drawers: {
+                ...config.drawers,
+                [id]: { ...config.drawers[id], siphonCut: !config.drawers[id].siphonCut },
+              },
+            })}
             onChange={(siphonCut) => updateDrawer(id, { siphonCut })}
           />
         </section>

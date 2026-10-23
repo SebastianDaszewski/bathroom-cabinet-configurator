@@ -77,6 +77,16 @@ describe('camera', () => {
   it('places the camera at the given distance', () => {
     expect(Math.hypot(...cameraPosition(2))).toBeCloseTo(2)
   })
+
+  it.each([
+    ['front', 2],
+    ['side', 0],
+    ['top', 1],
+  ] as const)('looks along the main axis for the %s view', (view, axis) => {
+    const position = cameraPosition(3, view)
+    expect(Math.hypot(...position)).toBeCloseTo(3)
+    expect(Math.abs(position[axis])).toBeGreaterThan(2.9)
+  })
 })
 
 describe('ndcToScreen', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { toCsv, toCutList, type CutListRow } from './cutlist'
+import { cutListFileName, toCsv, toCutList, type CutListRow } from './cutlist'
 import { buildPanels } from './panels'
 import { DEFAULT_CONFIG } from './schema'
 
@@ -113,5 +113,11 @@ describe('toCsv', () => {
   it('has one line per row', () => {
     const csv = toCsv(toCutList(buildPanels(DEFAULT_CONFIG)))
     expect(csv.trimEnd().split('\r\n')).toHaveLength(9)
+  })
+})
+
+describe('cutListFileName', () => {
+  it('names the file after the cabinet size', () => {
+    expect(cutListFileName(DEFAULT_CONFIG)).toBe('szafka-600x500x500-formatki.csv')
   })
 })

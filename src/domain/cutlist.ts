@@ -92,6 +92,10 @@ const CSV_HEADER = [
   'Uwagi',
 ]
 
+export function cutListFileName(size: { width: number; height: number; depth: number }): string {
+  return `szafka-${size.width}x${size.height}x${size.depth}-formatki.csv`
+}
+
 function csvField(value: string | number): string {
   const text = String(value)
   return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text

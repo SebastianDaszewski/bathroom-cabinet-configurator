@@ -2,7 +2,13 @@ import { ContactShadows, Environment, Lightformer } from '@react-three/drei'
 
 const SHADOW_GAP = 0.002
 
-export function StudioLighting({ floor, span }: { floor: number; span: number }) {
+interface StudioLightingProps {
+  floor: number
+  span: number
+  shadowKey: string
+}
+
+export function StudioLighting({ floor, span, shadowKey }: StudioLightingProps) {
   return (
     <>
       <Environment resolution={256}>
@@ -28,6 +34,8 @@ export function StudioLighting({ floor, span }: { floor: number; span: number })
       </Environment>
       <directionalLight position={[2, 3, 2.5]} intensity={0.9} />
       <ContactShadows
+        key={shadowKey}
+        frames={1}
         position={[0, floor - SHADOW_GAP, 0]}
         scale={span * 2.2}
         far={0.4}

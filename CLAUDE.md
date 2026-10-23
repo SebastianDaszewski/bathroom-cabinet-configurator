@@ -7,7 +7,7 @@ Keep both in sync with the code; tick off milestones in `progress.md`.
 ## Commands
 
 - `pnpm dev` / `pnpm build`
-- `pnpm test` (Vitest), `pnpm typecheck`, `pnpm lint` (oxlint), `pnpm format`
+- `pnpm test` (Vitest), `pnpm test:e2e` (Playwright), `pnpm typecheck`, `pnpm lint` (oxlint), `pnpm format`
 - Before finishing a task run: `pnpm lint && pnpm typecheck && pnpm test`
 
 ## Architecture rules
