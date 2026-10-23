@@ -1,6 +1,7 @@
+import { findDecor, type DecorFinish } from '../domain/catalog'
 import type { Axis, Panel, Vec3 } from '../domain/panels'
 import type { Config, DrawerId } from '../domain/schema'
-import { cabinetCentre, panelColor, toMetres, toScene, type Vec3Tuple } from './geometry'
+import { cabinetCentre, panelColor, toMetres, type Vec3Tuple } from './geometry'
 
 export type Point = [number, number]
 
@@ -15,11 +16,15 @@ export interface PanelOutline {
   holes: Hole[]
 }
 
+export type GrainAxis = 'u' | 'v'
+
 export interface PanelMesh {
   id: string
   drawer: DrawerId | null
-  glueGroup: string | null
   color: string
+  finish: DecorFinish
+  grainAxis: GrainAxis | null
+  textureOffset: Point
   thickness: number
   outline: PanelOutline
   matrix: number[]
@@ -84,50 +89,68 @@ export function panelMatrix(panel: Panel, centre: Vec3): number[] {
   ]
 }
 
+export function mergeGlued(panels: readonly Panel[]): Panel[] {
+  const merged: Panel[] = []
+  const seen = new Set<string>()
+
+  for (const panel of panels) {
+    if (!panel.glueGroup) {
+      merged.push(panel)
+      continue
+    }
+    if (seen.has(panel.glueGroup)) continue
+    seen.add(panel.glueGroup)
+
+    const members = panels.filter((candidate) => candidate.glueGroup === panel.glueGroup)
+    const axis = panel.axes[2]
+    const min = Math.min(...members.map((member) => member.position[axis] - member.size[axis] / 2))
+    const thickness = members.reduce((sum, member) => sum + member.thickness, 0)
+    const top = members.reduce((best, member) =>
+      member.position[axis] > best.position[axis] ? member : best,
+    )
+
+    merged.push({
+      ...top,
+      id: panel.glueGroup,
+      thickness,
+      size: { ...top.size, [axis]: thickness },
+      position: { ...top.position, [axis]: min + thickness / 2 },
+    })
+  }
+
+  return merged
+}
+
+export function grainAxis(panel: Panel): GrainAxis | null {
+  if (!panel.grain) return null
+  return panel.grain === 'length' ? 'u' : 'v'
+}
+
+function idSeed(id: string): number {
+  let hash = 0
+  for (const char of id) hash = (hash * 31 + char.charCodeAt(0)) % 100_003
+  return hash
+}
+
+export function textureOffset(panel: Panel): Point {
+  const along = (axis: Axis) => panel.position[axis] - panel.size[axis] / 2
+  const base: Point = [along(panel.axes[0]), along(panel.axes[1])]
+  if (panel.continuousGrain) return base
+  const seed = idSeed(panel.id)
+  return [base[0] + (seed % 997), base[1] + (seed % 577)]
+}
+
 export function panelMeshes(config: Config, panels: readonly Panel[]): PanelMesh[] {
   const centre = cabinetCentre(config)
-  return panels.map((panel) => ({
+  return mergeGlued(panels).map((panel) => ({
     id: panel.id,
     drawer: panel.drawer,
-    glueGroup: panel.glueGroup,
     color: panelColor(panel),
+    finish: findDecor(panel.decor)?.finish ?? 'plain',
+    grainAxis: grainAxis(panel),
+    textureOffset: textureOffset(panel),
     thickness: panel.thickness,
     outline: panelOutline(panel),
     matrix: panelMatrix(panel, centre),
   }))
-}
-
-export interface GlueBlock {
-  id: string
-  drawer: DrawerId | null
-  position: Vec3Tuple
-  size: Vec3Tuple
-}
-
-export function glueBlocks(config: Config, panels: readonly Panel[]): GlueBlock[] {
-  const centre = cabinetCentre(config)
-  const groups = new Map<string, Panel[]>()
-  for (const panel of panels) {
-    if (panel.glueGroup)
-      groups.set(panel.glueGroup, [...(groups.get(panel.glueGroup) ?? []), panel])
-  }
-
-  return [...groups].map(([id, members]) => {
-    const axes = ['x', 'y', 'z'] as const
-    const min = axes.map((axis) =>
-      Math.min(...members.map((panel) => panel.position[axis] - panel.size[axis] / 2)),
-    )
-    const max = axes.map((axis) =>
-      Math.max(...members.map((panel) => panel.position[axis] + panel.size[axis] / 2)),
-    )
-    return {
-      id,
-      drawer: members[0].drawer,
-      position: toScene(
-        { x: (min[0] + max[0]) / 2, y: (min[1] + max[1]) / 2, z: (min[2] + max[2]) / 2 },
-        centre,
-      ),
-      size: [toMetres(max[0] - min[0]), toMetres(max[1] - min[1]), toMetres(max[2] - min[2])],
-    }
-  })
 }

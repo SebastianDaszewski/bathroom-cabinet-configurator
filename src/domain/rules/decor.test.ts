@@ -45,6 +45,11 @@ describe('R9 applyDecorCompatibility', () => {
     expect(result.config.drawerDecor).toBe('white-w960')
   })
 
+  it('checks the drawer bottom decor against chipboard', () => {
+    const result = applyDecorCompatibility({ ...DEFAULT_CONFIG, drawerBottomDecor: 'black-ps01' })
+    expect(result.config.drawerBottomDecor).toBe('white-w960')
+  })
+
   it('replaces unknown decors', () => {
     const result = applyDecorCompatibility({ ...DEFAULT_CONFIG, carcassDecor: 'gold' })
 

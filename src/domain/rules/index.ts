@@ -2,6 +2,7 @@ import type { Config } from '../schema'
 import { applyDecorCompatibility } from './decor'
 import { clampDimensions } from './dimensions'
 import { applyDrawerLengths } from './drawerLength'
+import { applyContinuousGrain } from './grain'
 import { applyDoubleHandleWidth, applyHandleCompatibility, applyHandleSpacing } from './handles'
 import { applySiphonCutDepth, applySiphonCutWidth, applySiphonPosition } from './siphon'
 import { applyTopLength } from './top'
@@ -18,6 +19,7 @@ const RULES: readonly Rule[] = [
   applySiphonCutDepth,
   applySiphonPosition,
   applyTopLength,
+  applyContinuousGrain,
 ]
 
 export function normalize(config: Config): RuleResult {
@@ -33,7 +35,7 @@ export function normalize(config: Config): RuleResult {
 export { compatibleDecors } from './decor'
 export { maxTopExtension, topLength } from './top'
 export { allowedDrawerLengths } from './drawerLength'
-export { frontHeights } from './fronts'
+export { frontHeights, hasEdgeHandle } from './fronts'
 export {
   allowedHandleDrillings,
   allowedHandleSpacings,

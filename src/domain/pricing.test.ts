@@ -155,6 +155,10 @@ describe('price — hardware and machining', () => {
     })
   })
 
+  it('has no profile for fronts prepared for an edge handle', () => {
+    expect(find(quote({ frontType: 'edge-handle-ready' }), 'Profil uchwytu')).toBeUndefined()
+  })
+
   it('prices grip groove milling by front length', () => {
     expect(find(quote({ frontType: 'grip-groove' }), 'Frezowanie')).toMatchObject({
       category: 'machining',

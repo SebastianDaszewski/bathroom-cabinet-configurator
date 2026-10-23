@@ -123,8 +123,15 @@ every milestone.
       reference. "Zacznij od nowa" now asks for confirmation in a native
       `<dialog>` (Escape / backdrop / "Anuluj" cancel), because it sits right
       under "Kopiuj link". 311 tests.
-- [ ] 9. Grain direction, drawer-bottom decor, front prepared for an edge
-      handle (owner asked for all three after the reference comparison)
+- [x] **9. Look, grain & details** — the 3D view looked like CAD next to the
+      reference. Now: procedural seamless textures (`scene/noise.ts`, tested
+      for tiling; `scene/textures.ts` paints them on canvas), tinted by the
+      decor colour and oriented by `Panel.grain`; outlines removed; 1 mm
+      rounded edges; studio lighting + contact shadow; glued boards render as
+      one solid (`mergeGlued`). Oak / walnut colours lightened. Domain:
+      `sideGrain`, `frontGrain`, `continuousGrain` (R14), grain column in the
+      cut list, `drawerBottomDecor` (W962), front type `edge-handle-ready`
+      (shortened, no profile, no profile price). 339 tests.
 - [ ] 10. Summary, CSV export, responsive polish, Playwright, deploy
 
 ## Repo

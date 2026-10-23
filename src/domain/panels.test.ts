@@ -136,6 +136,38 @@ describe('buildPanels — countertop', () => {
   })
 })
 
+describe('buildPanels — grain', () => {
+  const grainOf = (input: Config, id: string) => byId(buildPanels(input), id).grain
+
+  it('has no grain on plain decors', () => {
+    expect(grainOf(DEFAULT_CONFIG, 'side-left')).toBeNull()
+    expect(grainOf(DEFAULT_CONFIG, 'drawer-top-bottom')).toBeNull()
+  })
+
+  it('runs the side grain vertically or horizontally', () => {
+    const oak = { carcassDecor: 'oak-h1145' }
+    expect(grainOf(config(oak), 'side-left')).toBe('length')
+    expect(grainOf(config({ ...oak, sideGrain: 'horizontal' }), 'side-left')).toBe('width')
+  })
+
+  it('runs the front grain horizontally or vertically', () => {
+    expect(grainOf(DEFAULT_CONFIG, 'front-top')).toBe('length')
+    expect(grainOf(config({ frontGrain: 'vertical' }), 'front-top')).toBe('width')
+  })
+
+  it('marks fronts with continuous grain', () => {
+    const panels = buildPanels(config({ frontGrain: 'vertical', continuousGrain: true }))
+    expect(byId(panels, 'front-top').continuousGrain).toBe(true)
+    expect(byId(panels, 'side-left').continuousGrain).toBe(false)
+  })
+
+  it('uses the drawer bottom decor for drawer bottoms only', () => {
+    const panels = buildPanels(config({ drawerBottomDecor: 'graphite-u961' }))
+    expect(byId(panels, 'drawer-top-bottom').decor).toBe('graphite-u961')
+    expect(byId(panels, 'drawer-top-back').decor).toBe('white-w960')
+  })
+})
+
 describe('buildPanels — drawers', () => {
   it('assigns drawer fronts and boxes to their drawer', () => {
     const panels = buildPanels(config({ runner: 'tandem' }))

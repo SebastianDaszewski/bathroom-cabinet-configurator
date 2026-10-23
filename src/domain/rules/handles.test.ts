@@ -17,6 +17,7 @@ describe('R4 handle compatibility', () => {
     [{ opening: 'tip-on' }, 'Tip-On'],
     [{ frontType: 'edge-handle' }, 'uchwytem krawędziowym'],
     [{ frontType: 'grip-groove' }, 'frezowanym uchwytem'],
+    [{ frontType: 'edge-handle-ready' }, 'uchwytem krawędziowym'],
   ] as const)('%j blocks handle drilling', (overrides, reason) => {
     expect(handleDrillingBlocker(config(overrides))).toContain(reason)
     expect(allowedHandleDrillings(config({ ...overrides, width: 1000 }))).toEqual(['none'])

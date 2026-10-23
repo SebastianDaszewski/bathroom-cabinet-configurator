@@ -75,6 +75,10 @@ describe('hardwareItems', () => {
     expect(top.position[1]).toBeCloseTo((251 + 245 + 2 - centre.y) / 1000)
   })
 
+  it('shows no profile on fronts prepared for an edge handle', () => {
+    expect(frontItemsFor(config({ frontType: 'edge-handle-ready' }))).toEqual([])
+  })
+
   it('marks the grip groove at the top of each front', () => {
     const items = frontItemsFor(config({ frontType: 'grip-groove' }))
     expect(items).toHaveLength(2)

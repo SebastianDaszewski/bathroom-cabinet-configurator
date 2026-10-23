@@ -1,5 +1,5 @@
 import { findBoard, findDecor } from './catalog'
-import type { Cutout, Edges, Panel } from './panels'
+import type { Edges, GrainDirection, Panel } from './panels'
 
 export interface CutListRow {
   name: string
@@ -10,7 +10,13 @@ export interface CutListRow {
   thickness: number
   qty: number
   edges: string
+  grain: string
   notes: string
+}
+
+const GRAIN_LABELS: Record<GrainDirection, string> = {
+  length: 'wzdłuż długości',
+  width: 'wzdłuż szerokości',
 }
 
 const EDGE_LABELS: readonly [keyof Edges, string][] = [
@@ -31,9 +37,13 @@ function decorLabel(panel: Panel): string {
   return decor ? `${decor.code} ${decor.name}` : panel.decor
 }
 
-function cutoutNotes(cutouts: readonly Cutout[]): string {
-  if (cutouts.length === 0) return ''
-  return `Otwory Ø${cutouts[0].diameter}: ${cutouts.length} szt.`
+function panelNotes(panel: Panel): string {
+  const notes: string[] = []
+  if (panel.cutouts.length > 0) {
+    notes.push(`Otwory Ø${panel.cutouts[0].diameter}: ${panel.cutouts.length} szt.`)
+  }
+  if (panel.continuousGrain && panel.grain) notes.push('Ciągłe usłojenie frontów')
+  return notes.join(', ')
 }
 
 function toRow(panel: Panel): CutListRow {
@@ -46,7 +56,8 @@ function toRow(panel: Panel): CutListRow {
     thickness: panel.thickness,
     qty: 1,
     edges: edgeLabel(panel.edges),
-    notes: cutoutNotes(panel.cutouts),
+    grain: panel.grain ? GRAIN_LABELS[panel.grain] : '',
+    notes: panelNotes(panel),
   }
 }
 
@@ -77,6 +88,7 @@ const CSV_HEADER = [
   'Grubość (mm)',
   'Ilość',
   'Okleina',
+  'Usłojenie',
   'Uwagi',
 ]
 
@@ -97,6 +109,7 @@ export function toCsv(rows: readonly CutListRow[]): string {
       row.thickness,
       row.qty,
       row.edges,
+      row.grain,
       row.notes,
     ]),
   ].map((fields) => fields.map(csvField).join(';'))
