@@ -59,7 +59,15 @@ every milestone.
       every line, total = sum of lines. Calibrated: default 1237.12 PLN,
       ≈ 0.39 PLN/mm width, ≈ 0.34 PLN/mm height (tests check ranges, not exact
       amounts). 218 tests. All rates are our own estimates.
-- [ ] 5. 3D scene from panels
+- [x] **5. 3D scene** — `scene/geometry.ts` (pure: mm → m, cabinet centred on
+      the origin, decor colours, W/H/D guides, camera distance from cabinet
+      size) + R3F components: panel meshes with outlined edges, dimension lines
+      with DOM labels projected each frame (drei `Html` lost a label under
+      StrictMode), orbit camera that keeps its angle and refits its
+      distance when the size changes, "Reset view". Scene lazy-loaded: app
+      chunk 317 kB (97 kB gzip), Three.js chunk 958 kB (255 kB gzip); chunk
+      warning limit raised to 1000 kB. Only pure helpers are unit-tested
+      (229 tests); the scene itself gets a Playwright smoke test in M8.
 - [ ] 6. Stepper UI + store + URL sync
 - [ ] 7. Cut-outs & handles in 3D, open-drawers toggle
 - [ ] 8. Summary, CSV export, responsive polish, deploy

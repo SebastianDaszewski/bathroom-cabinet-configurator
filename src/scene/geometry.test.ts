@@ -1,0 +1,102 @@
+import { describe, expect, it } from 'vitest'
+import { buildPanels } from '../domain/panels'
+import { DEFAULT_CONFIG } from '../domain/schema'
+import {
+  BACK_COLOR,
+  cameraDistance,
+  cameraPosition,
+  dimensionGuides,
+  ndcToScreen,
+  panelMeshes,
+  toMetres,
+} from './geometry'
+
+const meshes = panelMeshes(DEFAULT_CONFIG, buildPanels(DEFAULT_CONFIG))
+const mesh = (id: string) => meshes.find((candidate) => candidate.id === id)
+
+describe('panelMeshes', () => {
+  it('creates one mesh per panel', () => {
+    expect(meshes).toHaveLength(buildPanels(DEFAULT_CONFIG).length)
+  })
+
+  it('converts millimetres to metres', () => {
+    expect(toMetres(600)).toBe(0.6)
+    expect(mesh('side-left')?.size).toEqual([0.018, 0.5, 0.5])
+  })
+
+  it('centres the carcass on the origin', () => {
+    expect(mesh('side-left')?.position).toEqual([-0.291, 0, 0])
+    expect(mesh('side-right')?.position).toEqual([0.291, 0, 0])
+    expect(mesh('bottom')?.position[1]).toBeCloseTo(-0.241)
+  })
+
+  it('takes colours from the decors', () => {
+    expect(mesh('side-left')?.color).toBe('#8d8f8c')
+    expect(mesh('front-top')?.color).toBe('#b8915f')
+    expect(mesh('drawer-top-back')?.color).toBe('#f2f1ec')
+    expect(mesh('back')?.color).toBe(BACK_COLOR)
+  })
+})
+
+describe('dimensionGuides', () => {
+  const guides = dimensionGuides(DEFAULT_CONFIG)
+  const guide = (id: string) => guides.find((candidate) => candidate.id === id)
+
+  it('labels width, height and depth in millimetres', () => {
+    expect(guides.map((candidate) => candidate.label)).toEqual(['600 mm', '500 mm', '500 mm'])
+  })
+
+  it('spans the cabinet along each axis', () => {
+    const width = guide('width')
+    const height = guide('height')
+    const depth = guide('depth')
+    expect((width?.to[0] ?? 0) - (width?.from[0] ?? 0)).toBeCloseTo(0.6)
+    expect((height?.to[1] ?? 0) - (height?.from[1] ?? 0)).toBeCloseTo(0.5)
+    expect((depth?.to[2] ?? 0) - (depth?.from[2] ?? 0)).toBeCloseTo(0.5)
+  })
+
+  it('places guides outside the cabinet', () => {
+    expect(guide('width')?.from[1]).toBeCloseTo(-0.31)
+    expect(guide('height')?.from[0]).toBeCloseTo(-0.36)
+    expect(guide('depth')?.from[0]).toBeCloseTo(0.36)
+  })
+
+  it('puts the label in the middle of the guide', () => {
+    expect(guide('width')?.labelPosition).toEqual([0, -0.31, 0.25])
+  })
+})
+
+describe('camera', () => {
+  it('moves further away for bigger cabinets', () => {
+    const small = cameraDistance({ ...DEFAULT_CONFIG, width: 500, height: 400, depth: 390 })
+    const big = cameraDistance({ ...DEFAULT_CONFIG, width: 1200, height: 600, depth: 700 })
+    expect(big).toBeGreaterThan(small)
+  })
+
+  it('keeps the whole cabinet in a 40° view', () => {
+    const distance = cameraDistance({ ...DEFAULT_CONFIG, width: 1200 })
+    const halfDiagonal = Math.hypot(1.2, 0.5, 0.5) / 2
+    expect(Math.atan(halfDiagonal / distance) * 2).toBeLessThan((40 * Math.PI) / 180)
+  })
+
+  it('places the camera at the given distance', () => {
+    expect(Math.hypot(...cameraPosition(2))).toBeCloseTo(2)
+  })
+})
+
+describe('ndcToScreen', () => {
+  const size = { width: 800, height: 600 }
+
+  it('maps the centre of the view to the centre of the canvas', () => {
+    expect(ndcToScreen({ x: 0, y: 0, z: 0.5 }, size)).toEqual({ x: 400, y: 300, visible: true })
+  })
+
+  it('flips the y axis', () => {
+    expect(ndcToScreen({ x: -1, y: 1, z: 0 }, size)).toMatchObject({ x: 0, y: 0 })
+    expect(ndcToScreen({ x: 1, y: -1, z: 0 }, size)).toMatchObject({ x: 800, y: 600 })
+  })
+
+  it('hides points outside the clipping range', () => {
+    expect(ndcToScreen({ x: 0, y: 0, z: 1.2 }, size).visible).toBe(false)
+  })
+})

@@ -1,18 +1,19 @@
-import { OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { lazy, Suspense } from 'react'
+import { buildPanels } from './domain/panels'
+import { normalize } from './domain/rules'
+import { DEFAULT_CONFIG } from './domain/schema'
+
+const CabinetScene = lazy(() => import('./scene/CabinetScene'))
+
+const { config } = normalize(DEFAULT_CONFIG)
+const panels = buildPanels(config)
 
 export default function App() {
   return (
     <main className="app">
-      <Canvas camera={{ position: [1.2, 0.9, 1.4], fov: 40 }}>
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[2, 3, 2]} intensity={1.2} />
-        <mesh>
-          <boxGeometry args={[0.6, 0.5, 0.5]} />
-          <meshStandardMaterial color="#c8a37a" />
-        </mesh>
-        <OrbitControls makeDefault />
-      </Canvas>
+      <Suspense fallback={<div className="scene-loading">Loading 3D view…</div>}>
+        <CabinetScene config={config} panels={panels} />
+      </Suspense>
     </main>
   )
 }
