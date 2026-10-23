@@ -1,5 +1,4 @@
 import { findRunner } from '../domain/catalog'
-import { SIPHON_CUT_DEPTH, SIPHON_CUT_WIDTH } from '../domain/constants'
 import type { Panel, Vec3 } from '../domain/panels'
 import { DRAWER_IDS, type Config, type DrawerId } from '../domain/schema'
 import { cabinetCentre, toMetres, toScene, type Vec3Tuple } from './geometry'
@@ -245,8 +244,10 @@ function siphonTrays(config: Config, panels: readonly Panel[], centre: Vec3): Ha
         drawer,
         shape: 'tray',
         position: toScene({ x: gapStart, y: min.y + bottom.thickness, z: min.z }, centre),
-        floor: scale(trayFloorOutline(SIPHON_CUT_WIDTH, SIPHON_CUT_DEPTH, TRAY_RADIUS)),
-        walls: scale(trayWallOutline(SIPHON_CUT_WIDTH, SIPHON_CUT_DEPTH, TRAY_RADIUS, TRAY_WALL)),
+        floor: scale(trayFloorOutline(config.siphonCutWidth, config.siphonCutDepth, TRAY_RADIUS)),
+        walls: scale(
+          trayWallOutline(config.siphonCutWidth, config.siphonCutDepth, TRAY_RADIUS, TRAY_WALL),
+        ),
         wall: toMetres(TRAY_WALL),
         height: toMetres(TRAY_HEIGHT),
         color: TRAY_COLOR,
@@ -267,8 +268,17 @@ export function hardwareItems(config: Config, panels: readonly Panel[]): Hardwar
 
 export const DRAWER_OPEN_RATIO = 0.75
 
-export function drawerOffsets(config: Config, open: boolean): Record<DrawerId, number> {
+export type OpenDrawers = Record<DrawerId, boolean>
+
+export const CLOSED_DRAWERS: OpenDrawers = { top: false, bottom: false }
+
+export function toggleAllDrawers(open: OpenDrawers): OpenDrawers {
+  const next = !DRAWER_IDS.some((id) => open[id])
+  return { top: next, bottom: next }
+}
+
+export function drawerOffsets(config: Config, open: OpenDrawers): Record<DrawerId, number> {
   const offset = (id: DrawerId) =>
-    open ? toMetres(Math.round(config.drawers[id].length * DRAWER_OPEN_RATIO)) : 0
+    open[id] ? toMetres(Math.round(config.drawers[id].length * DRAWER_OPEN_RATIO)) : 0
   return { top: offset('top'), bottom: offset('bottom') }
 }

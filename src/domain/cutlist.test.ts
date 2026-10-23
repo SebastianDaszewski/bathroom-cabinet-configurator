@@ -8,7 +8,7 @@ describe('toCutList', () => {
 
   it('merges identical panels and keeps every piece', () => {
     expect(rows.find((row) => row.name === 'Bok')).toMatchObject({ qty: 2 })
-    expect(rows.reduce((sum, row) => sum + row.qty, 0)).toBe(11)
+    expect(rows.reduce((sum, row) => sum + row.qty, 0)).toBe(10)
   })
 
   it('keeps panels that differ in size apart', () => {
@@ -45,7 +45,11 @@ describe('toCutList', () => {
       edges: 'D1',
       notes: '',
     })
-    expect(rows.find((row) => row.name === 'Listwa górna tylna')).toMatchObject({ edges: '' })
+    expect(rows.find((row) => row.name === 'Wieniec górny')).toMatchObject({
+      length: 600,
+      width: 523,
+      edges: 'D1 S1 S2',
+    })
     expect(rows.find((row) => row.name === 'Front szuflady')?.edges).toBe('D1 D2 S1 S2')
   })
 
@@ -84,6 +88,6 @@ describe('toCsv', () => {
 
   it('has one line per row', () => {
     const csv = toCsv(toCutList(buildPanels(DEFAULT_CONFIG)))
-    expect(csv.trimEnd().split('\r\n')).toHaveLength(10)
+    expect(csv.trimEnd().split('\r\n')).toHaveLength(9)
   })
 })

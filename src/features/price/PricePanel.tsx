@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { PRICE_CATEGORIES, subtotals, type Price } from '../../domain/pricing'
 import { shareUrl } from '../../state/persistence'
 import { useConfigurator, useDerived } from '../../state/useConfigurator'
+import { ConfirmDialog } from '../../ui/ConfirmDialog'
 import { formatPln, formatQuantity } from '../../ui/format'
 import { describeAdjustment, PRICE_CATEGORY_LABELS } from '../labels'
 
@@ -104,9 +105,32 @@ function CopyLinkButton() {
   )
 }
 
+function ResetButton() {
+  const reset = useConfigurator((state) => state.reset)
+  const [confirming, setConfirming] = useState(false)
+
+  return (
+    <>
+      <button type="button" className="button-quiet" onClick={() => setConfirming(true)}>
+        Zacznij od nowa
+      </button>
+      <ConfirmDialog
+        open={confirming}
+        title="Zacząć od nowa?"
+        message="Wszystkie ustawienia szafki wrócą do wartości domyślnych. Jeśli chcesz zachować obecny projekt, najpierw skopiuj link."
+        confirmLabel="Zacznij od nowa"
+        onConfirm={() => {
+          reset()
+          setConfirming(false)
+        }}
+        onCancel={() => setConfirming(false)}
+      />
+    </>
+  )
+}
+
 export function PricePanel() {
   const { price } = useDerived()
-  const reset = useConfigurator((state) => state.reset)
 
   return (
     <aside className="price-panel" aria-label="Cena">
@@ -119,9 +143,7 @@ export function PricePanel() {
       <Breakdown price={price} />
       <div className="price-actions">
         <CopyLinkButton />
-        <button type="button" className="button-quiet" onClick={reset}>
-          Zacznij od nowa
-        </button>
+        <ResetButton />
       </div>
     </aside>
   )

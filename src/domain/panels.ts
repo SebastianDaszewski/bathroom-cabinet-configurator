@@ -9,10 +9,9 @@ import {
   FRONT_GAP,
   HANDLE_HOLE_DIAMETER,
   HANDLE_TOP_OFFSET,
-  SIPHON_CUT_WIDTH,
-  TOP_RAIL_WIDTH,
+  TOP_FRONT_OVERHANG,
 } from './constants'
-import { frontHeights, siphonCenter } from './rules'
+import { frontHeights, siphonCenter, topLength } from './rules'
 import { DRAWER_IDS, type BoardType, type Config, type DrawerId } from './schema'
 
 export type Axis = 'x' | 'y' | 'z'
@@ -54,11 +53,13 @@ export interface Panel {
   size: Vec3
   cutouts: Cutout[]
   drawer: DrawerId | null
+  glueGroup: string | null
 }
 
-type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer'> & {
+type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer' | 'glueGroup'> & {
   min: Vec3
   drawer?: DrawerId
+  glueGroup?: string
   edges?: Partial<Edges>
   cutouts?: Cutout[]
 }
@@ -66,7 +67,7 @@ type PanelSpec = Omit<Panel, 'position' | 'size' | 'cutouts' | 'edges' | 'drawer
 const NO_EDGES: Edges = { l1: false, l2: false, w1: false, w2: false }
 const ALL_EDGES: Edges = { l1: true, l2: true, w1: true, w2: true }
 
-function place({ min, edges = {}, cutouts = [], drawer, ...panel }: PanelSpec): Panel {
+function place({ min, edges = {}, cutouts = [], drawer, glueGroup, ...panel }: PanelSpec): Panel {
   const size: Vec3 = { x: 0, y: 0, z: 0 }
   size[panel.axes[0]] = panel.length
   size[panel.axes[1]] = panel.width
@@ -79,6 +80,7 @@ function place({ min, edges = {}, cutouts = [], drawer, ...panel }: PanelSpec): 
     position: { x: min.x + size.x / 2, y: min.y + size.y / 2, z: min.z + size.z / 2 },
     cutouts,
     drawer: drawer ?? null,
+    glueGroup: glueGroup ?? null,
   }
 }
 
@@ -120,24 +122,69 @@ function carcassPanels(config: Config): Panel[] {
       min: { x: t, y: 0, z: 0 },
       edges: { l1: true },
     }),
+    ...topPanels(config),
+  ]
+}
+
+export function topThickness(config: Config): number {
+  return config.topThickening === 'double' ? 2 * t : t
+}
+
+export function topDepth(config: Config): number {
+  return config.depth + t + TOP_FRONT_OVERHANG + config.topExtensionFront
+}
+
+export function cabinetBounds(config: Config): { min: Vec3; max: Vec3 } {
+  return {
+    min: { x: -config.topExtensionLeft, y: 0, z: 0 },
+    max: {
+      x: config.width + config.topExtensionRight,
+      y: config.height + topThickness(config),
+      z: topDepth(config),
+    },
+  }
+}
+
+function topPanels(config: Config): Panel[] {
+  const board = {
+    material: 'carcass',
+    board: config.carcassBoard,
+    decor: config.carcassDecor,
+    length: topLength(config),
+    width: topDepth(config),
+    thickness: t,
+    axes: ['x', 'z', 'y'],
+  } as const
+  const x = -config.topExtensionLeft
+  const banded = { l1: true, w1: true, w2: true }
+
+  if (config.topThickening === 'none') {
+    return [
+      place({
+        ...board,
+        id: 'top',
+        name: 'Wieniec górny',
+        min: { x, y: config.height, z: 0 },
+        edges: banded,
+      }),
+    ]
+  }
+
+  return [
     place({
-      ...carcass,
-      id: 'rail-front',
-      name: 'Listwa górna przednia',
-      length: inner,
-      width: TOP_RAIL_WIDTH,
-      axes: ['x', 'z', 'y'],
-      min: { x: t, y: height - t, z: depth - TOP_RAIL_WIDTH },
-      edges: { l1: true },
+      ...board,
+      id: 'top-thickening',
+      name: 'Pogrubienie wieńca',
+      min: { x, y: config.height, z: 0 },
+      glueGroup: 'top',
     }),
     place({
-      ...carcass,
-      id: 'rail-back',
-      name: 'Listwa górna tylna',
-      length: inner,
-      width: TOP_RAIL_WIDTH,
-      axes: ['x', 'z', 'y'],
-      min: { x: t, y: height - t, z: 0 },
+      ...board,
+      id: 'top',
+      name: 'Wieniec górny',
+      min: { x, y: config.height + t, z: 0 },
+      edges: banded,
+      glueGroup: 'top',
     }),
   ]
 }
@@ -237,14 +284,11 @@ function drawerPanels(config: Config, id: DrawerId): Panel[] {
     })
 
   const splitBack = (): Panel[] => {
-    const leftLength = Math.round(siphonCenter(config) - SIPHON_CUT_WIDTH / 2 - backMinX)
+    const cutWidth = config.siphonCutWidth
+    const leftLength = Math.round(siphonCenter(config) - cutWidth / 2 - backMinX)
     return [
       back('back-left', leftLength, backMinX),
-      back(
-        'back-right',
-        backLength - SIPHON_CUT_WIDTH - leftLength,
-        backMinX + leftLength + SIPHON_CUT_WIDTH,
-      ),
+      back('back-right', backLength - cutWidth - leftLength, backMinX + leftLength + cutWidth),
     ]
   }
 

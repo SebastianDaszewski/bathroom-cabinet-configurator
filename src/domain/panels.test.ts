@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPanels, type Panel } from './panels'
+import { buildPanels, cabinetBounds, type Panel } from './panels'
 import { normalize } from './rules'
 import { DEFAULT_CONFIG, type Config } from './schema'
 
@@ -34,8 +34,7 @@ describe('buildPanels — default config', () => {
       'side-left',
       'side-right',
       'bottom',
-      'rail-front',
-      'rail-back',
+      'top',
       'front-top',
       'front-bottom',
       'drawer-top-bottom',
@@ -48,8 +47,7 @@ describe('buildPanels — default config', () => {
   it.each([
     ['side-left', [500, 500, 18]],
     ['bottom', [564, 500, 18]],
-    ['rail-front', [564, 100, 18]],
-    ['rail-back', [564, 100, 18]],
+    ['top', [600, 523, 18]],
     ['front-top', [596, 249, 18]],
     ['front-bottom', [596, 248, 18]],
     ['drawer-top-bottom', [489, 440, 16]],
@@ -67,7 +65,7 @@ describe('buildPanels — default config', () => {
 
   it('bands the visible edges', () => {
     expect(byId(panels, 'side-left').edges).toEqual({ l1: true, l2: false, w1: false, w2: false })
-    expect(byId(panels, 'rail-back').edges).toEqual({ l1: false, l2: false, w1: false, w2: false })
+    expect(byId(panels, 'top').edges).toEqual({ l1: true, l2: false, w1: true, w2: true })
     expect(byId(panels, 'front-top').edges).toEqual({ l1: true, l2: true, w1: true, w2: true })
   })
 
@@ -83,13 +81,68 @@ describe('buildPanels — default config', () => {
   })
 })
 
+describe('buildPanels — countertop', () => {
+  it('lies on the carcass and covers the fronts', () => {
+    const top = byId(buildPanels(DEFAULT_CONFIG), 'top')
+    expect(minCorner(top)).toEqual({ x: 0, y: 500, z: 0 })
+    expect(top.width).toBe(500 + 18 + 5)
+  })
+
+  it('extends to the left, right and front', () => {
+    const top = byId(
+      buildPanels(config({ topExtensionLeft: 150, topExtensionRight: 250, topExtensionFront: 40 })),
+      'top',
+    )
+    expect(dims(top)).toEqual([1000, 563, 18])
+    expect(minCorner(top).x).toBe(-150)
+  })
+
+  it('is thickened with a second board underneath', () => {
+    const panels = buildPanels(config({ topThickening: 'double' }))
+    const thickening = byId(panels, 'top-thickening')
+
+    expect(thickening.name).toBe('Pogrubienie wieńca')
+    expect(dims(thickening)).toEqual(dims(byId(panels, 'top')))
+    expect(minCorner(thickening).y).toBe(500)
+    expect(minCorner(byId(panels, 'top')).y).toBe(518)
+  })
+
+  it('glues the thickening to the top as one edge-banded block', () => {
+    const panels = buildPanels(config({ topThickening: 'double' }))
+    expect(byId(panels, 'top').glueGroup).toBe('top')
+    expect(byId(panels, 'top-thickening').glueGroup).toBe('top')
+    expect(byId(panels, 'top-thickening').edges).toEqual({
+      l1: false,
+      l2: false,
+      w1: false,
+      w2: false,
+    })
+    expect(byId(buildPanels(DEFAULT_CONFIG), 'top').glueGroup).toBeNull()
+  })
+
+  it('reports the overall size including the countertop', () => {
+    expect(cabinetBounds(config({ topExtensionLeft: 100, topThickening: 'double' }))).toEqual({
+      min: { x: -100, y: 0, z: 0 },
+      max: { x: 600, y: 536, z: 523 },
+    })
+  })
+
+  it('never exceeds one board length (R12)', () => {
+    const top = byId(
+      buildPanels(config({ width: 1200, topExtensionLeft: 1000, topExtensionRight: 1000 })),
+      'top',
+    )
+    expect(top.length).toBe(2800)
+  })
+})
+
 describe('buildPanels — drawers', () => {
   it('assigns drawer fronts and boxes to their drawer', () => {
     const panels = buildPanels(config({ runner: 'tandem' }))
     const drawerOf = (id: string) => byId(panels, id).drawer
 
     expect(drawerOf('side-left')).toBeNull()
-    expect(drawerOf('rail-back')).toBeNull()
+    expect(drawerOf('top')).toBeNull()
     expect(drawerOf('front-top')).toBe('top')
     expect(drawerOf('drawer-top-side-left')).toBe('top')
     expect(drawerOf('front-bottom')).toBe('bottom')
@@ -152,6 +205,13 @@ describe('buildPanels — drawers', () => {
     expect(Math.abs(gapCentre(panels) - 250)).toBeLessThanOrEqual(0.5)
   })
 
+  it('uses the configured cut-out width for the gap', () => {
+    const panels = withCut({ siphonCutWidth: 200 })
+    const left = byId(panels, 'drawer-top-back-left')
+    const right = byId(panels, 'drawer-top-back-right')
+    expect(minCorner(right).x - (minCorner(left).x + left.length)).toBe(200)
+  })
+
   it('adds no extra board panels for the cut-out', () => {
     expect(withCut().filter((panel) => panel.drawer === 'top')).toHaveLength(4)
   })
@@ -205,6 +265,10 @@ describe('buildPanels — invariants', () => {
               handlePosition: depth === 440 ? 'top-50' : 'center',
               siphonPosition: depth === 700 ? 'custom' : 'center',
               siphonX: 0,
+              topThickening: height === 600 ? 'double' : 'none',
+              topExtensionLeft: width === 500 ? 300 : 0,
+              topExtensionRight: width === 1200 ? 1800 : 0,
+              topExtensionFront: depth === 700 ? 100 : 0,
               drawers: {
                 top: { length: 450, siphonCut: true },
                 bottom: { length: 450, siphonCut: depth !== 390 },
@@ -227,12 +291,14 @@ describe('buildPanels — invariants', () => {
         }
 
         const min = minCorner(panel)
-        expect(min.x).toBeGreaterThanOrEqual(0)
-        expect(min.y).toBeGreaterThanOrEqual(0)
-        expect(min.z).toBeGreaterThanOrEqual(0)
-        expect(min.x + panel.size.x).toBeLessThanOrEqual(input.width)
-        expect(min.y + panel.size.y).toBeLessThanOrEqual(input.height)
-        expect(min.z + panel.size.z).toBeLessThanOrEqual(input.depth + 18)
+        const bounds = cabinetBounds(input)
+        for (const axis of ['x', 'y', 'z'] as const) {
+          expect(min[axis]).toBeGreaterThanOrEqual(bounds.min[axis])
+          expect(min[axis] + panel.size[axis]).toBeLessThanOrEqual(bounds.max[axis])
+        }
+        if (!panel.id.startsWith('top')) {
+          expect(min.y + panel.size.y).toBeLessThanOrEqual(input.height)
+        }
 
         for (const hole of panel.cutouts) {
           expect(hole.u).toBeGreaterThanOrEqual(50)

@@ -1,6 +1,6 @@
 import type { Axis, Panel, Vec3 } from '../domain/panels'
 import type { Config, DrawerId } from '../domain/schema'
-import { cabinetCentre, panelColor, toMetres, type Vec3Tuple } from './geometry'
+import { cabinetCentre, panelColor, toMetres, toScene, type Vec3Tuple } from './geometry'
 
 export type Point = [number, number]
 
@@ -18,6 +18,7 @@ export interface PanelOutline {
 export interface PanelMesh {
   id: string
   drawer: DrawerId | null
+  glueGroup: string | null
   color: string
   thickness: number
   outline: PanelOutline
@@ -88,9 +89,45 @@ export function panelMeshes(config: Config, panels: readonly Panel[]): PanelMesh
   return panels.map((panel) => ({
     id: panel.id,
     drawer: panel.drawer,
+    glueGroup: panel.glueGroup,
     color: panelColor(panel),
     thickness: panel.thickness,
     outline: panelOutline(panel),
     matrix: panelMatrix(panel, centre),
   }))
+}
+
+export interface GlueBlock {
+  id: string
+  drawer: DrawerId | null
+  position: Vec3Tuple
+  size: Vec3Tuple
+}
+
+export function glueBlocks(config: Config, panels: readonly Panel[]): GlueBlock[] {
+  const centre = cabinetCentre(config)
+  const groups = new Map<string, Panel[]>()
+  for (const panel of panels) {
+    if (panel.glueGroup)
+      groups.set(panel.glueGroup, [...(groups.get(panel.glueGroup) ?? []), panel])
+  }
+
+  return [...groups].map(([id, members]) => {
+    const axes = ['x', 'y', 'z'] as const
+    const min = axes.map((axis) =>
+      Math.min(...members.map((panel) => panel.position[axis] - panel.size[axis] / 2)),
+    )
+    const max = axes.map((axis) =>
+      Math.max(...members.map((panel) => panel.position[axis] + panel.size[axis] / 2)),
+    )
+    return {
+      id,
+      drawer: members[0].drawer,
+      position: toScene(
+        { x: (min[0] + max[0]) / 2, y: (min[1] + max[1]) / 2, z: (min[2] + max[2]) / 2 },
+        centre,
+      ),
+      size: [toMetres(max[0] - min[0]), toMetres(max[1] - min[1]), toMetres(max[2] - min[2])],
+    }
+  })
 }

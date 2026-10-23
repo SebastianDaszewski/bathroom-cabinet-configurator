@@ -12,7 +12,9 @@ export const SIPHON_SIDE_MARGIN = 60
 
 export const DRAWER_BOARD_THICKNESS = 16
 
-export const TOP_RAIL_WIDTH = 100
+export const TOP_FRONT_OVERHANG = 5
+
+export const MAX_BOARD_LENGTH = 2800
 
 export const FRONT_EDGE_GAP = 2
 
@@ -22,9 +24,7 @@ export const DRAWER_BOX_LIFT = 25
 
 export const DRAWER_BOTTOM_SHORTENING = 10
 
-export const SIPHON_CUT_WIDTH = 164
-
-export const SIPHON_CUT_DEPTH = 270
+export const SIPHON_FRONT_MARGIN = 60
 
 export const HANDLE_HOLE_DIAMETER = 5
 

@@ -45,7 +45,7 @@ describe('price — totals', () => {
   })
 
   it('includes the margin in every line', () => {
-    expect(find(quote(), 'Montaż')).toMatchObject({ quantity: 1, amount: grosze(283) })
+    expect(find(quote(), 'Montaż')).toMatchObject({ quantity: 1, amount: grosze(264) })
   })
 
   it('groups the breakdown by category', () => {
@@ -68,10 +68,18 @@ describe('price — siphon cut-out', () => {
   })
 })
 
+describe('price — countertop', () => {
+  it('costs more when thickened or extended', () => {
+    const base = quote().total
+    expect(quote({ topThickening: 'double' }).total).toBeGreaterThan(base)
+    expect(quote({ topExtensionRight: 300 }).total).toBeGreaterThan(base)
+  })
+})
+
 describe('price — boards and edging', () => {
   it('prices each material group by area', () => {
     const carcass = find(quote(), 'Korpus')
-    expect(carcass).toMatchObject({ unit: 'm²', quantity: 0.895, unitPrice: grosze(110) })
+    expect(carcass).toMatchObject({ unit: 'm²', quantity: 1.096, unitPrice: grosze(110) })
   })
 
   it('applies the decor modifier', () => {
@@ -87,7 +95,7 @@ describe('price — boards and edging', () => {
   })
 
   it('measures edge banding from the panel edges', () => {
-    expect(find(quote(), 'Okleina')).toMatchObject({ unit: 'm', quantity: 6.46 })
+    expect(find(quote(), 'Okleina')).toMatchObject({ unit: 'm', quantity: 7.542 })
   })
 
   it('makes a wider cabinet more expensive in every board group', () => {
@@ -157,7 +165,7 @@ describe('price — hardware and machining', () => {
 
 describe('price — labour', () => {
   it('charges per panel', () => {
-    expect(find(quote(), 'Cięcie')?.quantity).toBe(11)
-    expect(find(quote({ runner: 'tandem' }), 'Cięcie')?.quantity).toBe(15)
+    expect(find(quote(), 'Cięcie')?.quantity).toBe(10)
+    expect(find(quote({ runner: 'tandem' }), 'Cięcie')?.quantity).toBe(14)
   })
 })
