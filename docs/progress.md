@@ -57,7 +57,8 @@ every milestone.
       depth are our assumptions.
 - [x] **4. Pricing** — `pricing.config.ts` (all rates), `pricing.ts`
       (`price(config, panels)`, `subtotals`). Integer grosze, margin inside
-      every line, total = sum of lines. Calibrated: default 1237.12 PLN,
+      every line, total = sum of lines. Calibrated: default 1237.12 PLN
+      (rates retuned in M7, see below),
       ≈ 0.39 PLN/mm width, ≈ 0.34 PLN/mm height (tests check ranges, not exact
       amounts). 218 tests. All rates are our own estimates.
 - [x] **5. 3D scene** — `scene/geometry.ts` (pure: mm → m, cabinet centred on
@@ -80,7 +81,27 @@ every milestone.
       Visual direction (frontend-design): cool bathroom stone + tile-glaze
       teal, Bricolage Grotesque + Instrument Sans (Google Fonts). Checked in
       Chrome on desktop; mobile layout still to be verified in M8. 263 tests.
-- [ ] 7. Cut-outs & handles in 3D, open-drawers toggle
+- [x] **7. Cut-outs & handles in 3D** — panels carry their `drawer`; every
+      panel is an `ExtrudeGeometry` built from `panelOutline` (Ø5 handle
+      holes as real holes) and placed by
+      `panelMatrix` (axes → world, mirrored bases flipped so faces stay
+      outward). Visual hardware from `scene/hardware.ts`: bar handles on hole
+      pairs, aluminium edge profile, dark grip groove, and the metal sides of
+      the Blum drawer box (hardware, so not in the cut list; priced with the
+      runner set). "Otwórz szuflady" slides
+      each drawer out by 75 % of its length (damped, instant with reduced
+      motion). Dimension labels are not occluded (decided). The HDF back panel was
+      removed (owner's call: vanities are open at the back for the pipes);
+      Siphon cut-out redone after checking the reference configurator: the
+      drawer bottom stays whole, the drawer back gets a 164 mm gap (two
+      pieces), and a shallow plastic tray 164 × 270 mm sits in front of it
+      (scene hardware). `siphonOffset` and R8 were removed — the reference's
+      218 mm is the cut-out's distance from the side, not its width. Siphon
+      cut-out is off by default, as in the reference. Prices recalibrated:
+      base labour 283 PLN, siphon cut-out 29.50 PLN → default 1236.65 PLN
+      (reference 1236.08), cut-out +44.43 PLN (reference +44.26),
+      ≈ 0.38 PLN/mm width, ≈ 0.32 PLN/mm height. Checked in Chrome.
+      284 tests.
 - [ ] 8. Summary, CSV export, responsive polish, deploy
 
 ## Repo

@@ -8,15 +8,22 @@ describe('toCutList', () => {
 
   it('merges identical panels and keeps every piece', () => {
     expect(rows.find((row) => row.name === 'Bok')).toMatchObject({ qty: 2 })
-    expect(rows.reduce((sum, row) => sum + row.qty, 0)).toBe(12)
+    expect(rows.reduce((sum, row) => sum + row.qty, 0)).toBe(11)
   })
 
-  it('keeps panels that differ in size or machining apart', () => {
+  it('keeps panels that differ in size apart', () => {
     expect(rows.filter((row) => row.name === 'Front szuflady')).toHaveLength(2)
-    expect(rows.filter((row) => row.name === 'Dno szuflady').map((row) => row.notes)).toEqual([
-      'Wycięcie pod syfon 218×200',
-      '',
-    ])
+    expect(rows.find((row) => row.name === 'Dno szuflady')).toMatchObject({ qty: 2 })
+  })
+
+  it('lists the two pieces of a drawer back split for the siphon', () => {
+    const backs = toCutList(
+      buildPanels({
+        ...DEFAULT_CONFIG,
+        drawers: { ...DEFAULT_CONFIG.drawers, top: { length: 450, siphonCut: true } },
+      }),
+    ).filter((row) => row.name === 'Tył szuflady')
+    expect(backs.map((row) => row.length)).toEqual([157, 156, 477])
   })
 
   it('merges fronts of equal height', () => {
@@ -38,11 +45,7 @@ describe('toCutList', () => {
       edges: 'D1',
       notes: '',
     })
-    expect(rows.find((row) => row.name === 'Plecy')).toMatchObject({
-      material: 'HDF 3 mm',
-      decor: '',
-      edges: '',
-    })
+    expect(rows.find((row) => row.name === 'Listwa górna tylna')).toMatchObject({ edges: '' })
     expect(rows.find((row) => row.name === 'Front szuflady')?.edges).toBe('D1 D2 S1 S2')
   })
 
@@ -81,6 +84,6 @@ describe('toCsv', () => {
 
   it('has one line per row', () => {
     const csv = toCsv(toCutList(buildPanels(DEFAULT_CONFIG)))
-    expect(csv.trimEnd().split('\r\n')).toHaveLength(12)
+    expect(csv.trimEnd().split('\r\n')).toHaveLength(10)
   })
 })

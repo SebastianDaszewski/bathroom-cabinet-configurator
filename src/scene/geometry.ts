@@ -4,13 +4,6 @@ import type { Config } from '../domain/schema'
 
 export type Vec3Tuple = [number, number, number]
 
-export interface PanelMesh {
-  id: string
-  position: Vec3Tuple
-  size: Vec3Tuple
-  color: string
-}
-
 export interface DimensionGuide {
   id: 'width' | 'height' | 'depth'
   from: Vec3Tuple
@@ -19,7 +12,6 @@ export interface DimensionGuide {
   labelPosition: Vec3Tuple
 }
 
-export const BACK_COLOR = '#a8a29e'
 export const FALLBACK_COLOR = '#d6d3d1'
 export const GUIDE_OFFSET = 60
 export const CAMERA_FOV = 40
@@ -30,27 +22,16 @@ export function toMetres(mm: number): number {
   return mm / 1000
 }
 
-function cabinetCentre(config: Config): Vec3 {
+export function cabinetCentre(config: Config): Vec3 {
   return { x: config.width / 2, y: config.height / 2, z: config.depth / 2 }
 }
 
-function toScene(point: Vec3, centre: Vec3): Vec3Tuple {
+export function toScene(point: Vec3, centre: Vec3): Vec3Tuple {
   return [toMetres(point.x - centre.x), toMetres(point.y - centre.y), toMetres(point.z - centre.z)]
 }
 
-function panelColor(panel: Panel): string {
-  if (!panel.decor) return BACK_COLOR
+export function panelColor(panel: Panel): string {
   return findDecor(panel.decor)?.color ?? FALLBACK_COLOR
-}
-
-export function panelMeshes(config: Config, panels: readonly Panel[]): PanelMesh[] {
-  const centre = cabinetCentre(config)
-  return panels.map((panel) => ({
-    id: panel.id,
-    position: toScene(panel.position, centre),
-    size: [toMetres(panel.size.x), toMetres(panel.size.y), toMetres(panel.size.z)],
-    color: panelColor(panel),
-  }))
 }
 
 export function dimensionGuides(config: Config): DimensionGuide[] {

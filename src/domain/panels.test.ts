@@ -36,7 +36,6 @@ describe('buildPanels — default config', () => {
       'bottom',
       'rail-front',
       'rail-back',
-      'back',
       'front-top',
       'front-bottom',
       'drawer-top-bottom',
@@ -51,7 +50,6 @@ describe('buildPanels — default config', () => {
     ['bottom', [564, 500, 18]],
     ['rail-front', [564, 100, 18]],
     ['rail-back', [564, 100, 18]],
-    ['back', [598, 498, 3]],
     ['front-top', [596, 249, 18]],
     ['front-bottom', [596, 248, 18]],
     ['drawer-top-bottom', [489, 440, 16]],
@@ -63,9 +61,8 @@ describe('buildPanels — default config', () => {
 
   it('uses the configured materials', () => {
     expect(byId(panels, 'side-left')).toMatchObject({ board: 'chipboard', decor: 'grey-u732' })
-    expect(byId(panels, 'back')).toMatchObject({ board: 'hdf', decor: null })
     expect(byId(panels, 'front-top')).toMatchObject({ board: 'chipboard', decor: 'oak-h1145' })
-    expect(byId(panels, 'drawer-top-back')).toMatchObject({ decor: 'white-w960' })
+    expect(byId(panels, 'drawer-bottom-back')).toMatchObject({ decor: 'white-w960' })
   })
 
   it('bands the visible edges', () => {
@@ -87,10 +84,22 @@ describe('buildPanels — default config', () => {
 })
 
 describe('buildPanels — drawers', () => {
+  it('assigns drawer fronts and boxes to their drawer', () => {
+    const panels = buildPanels(config({ runner: 'tandem' }))
+    const drawerOf = (id: string) => byId(panels, id).drawer
+
+    expect(drawerOf('side-left')).toBeNull()
+    expect(drawerOf('rail-back')).toBeNull()
+    expect(drawerOf('front-top')).toBe('top')
+    expect(drawerOf('drawer-top-side-left')).toBe('top')
+    expect(drawerOf('front-bottom')).toBe('bottom')
+    expect(drawerOf('drawer-bottom-back')).toBe('bottom')
+  })
+
   it('follows the drawer length', () => {
     const panels = buildPanels(config({ depth: 440 }))
     expect(byId(panels, 'drawer-top-bottom').width).toBe(390)
-    expect(minCorner(byId(panels, 'drawer-top-back')).z).toBe(40)
+    expect(minCorner(byId(panels, 'drawer-bottom-back')).z).toBe(40)
   })
 
   it('adds wooden sides for tandem runners', () => {
@@ -100,35 +109,51 @@ describe('buildPanels — drawers', () => {
     expect(sides).toHaveLength(4)
     expect(dims(sides[0])).toEqual([450, 179, 16])
     expect(byId(panels, 'drawer-top-bottom').length).toBe(522)
-    expect(byId(panels, 'drawer-top-back').length).toBe(522)
+    expect(byId(panels, 'drawer-bottom-back').length).toBe(522)
   })
 
-  it('cuts the siphon notch only where enabled, centred by default', () => {
-    const panels = buildPanels(DEFAULT_CONFIG)
-    const bottom = byId(panels, 'drawer-top-bottom')
-    const [notch] = bottom.cutouts
-
-    expect(notch).toMatchObject({ kind: 'notch', v: 0, length: 218, width: 200 })
-    if (notch.kind !== 'notch') throw new Error('expected a notch')
-    expect(minCorner(bottom).x + notch.u + notch.length / 2).toBe(300)
-    expect(byId(panels, 'drawer-bottom-bottom').cutouts).toEqual([])
-  })
-
-  it('cuts the drawer back from the top, leaving a strip at the bottom', () => {
-    const back = byId(buildPanels(DEFAULT_CONFIG), 'drawer-top-back')
-    expect(back.cutouts).toEqual([
-      expect.objectContaining({ kind: 'notch', v: 30, length: 218, width: 133 }),
-    ])
-  })
-
-  it('moves the cut-out to a custom position', () => {
-    const bottom = byId(
-      buildPanels(config({ siphonPosition: 'custom', siphonX: 250 })),
-      'drawer-top-bottom',
+  const withCut = (overrides: Partial<Config> = {}) =>
+    buildPanels(
+      config({
+        ...overrides,
+        drawers: {
+          top: { length: 450, siphonCut: true },
+          bottom: { length: 450, siphonCut: false },
+        },
+      }),
     )
-    const [notch] = bottom.cutouts
-    if (notch.kind !== 'notch') throw new Error('expected a notch')
-    expect(minCorner(bottom).x + notch.u + notch.length / 2).toBe(250)
+  const gapCentre = (panels: Panel[]) => {
+    const left = byId(panels, 'drawer-top-back-left')
+    return minCorner(left).x + left.length + 164 / 2
+  }
+
+  it('keeps the drawer bottom whole', () => {
+    expect(byId(withCut(), 'drawer-top-bottom').cutouts).toEqual([])
+  })
+
+  it('splits the drawer back around a 164 mm gap for the pipe', () => {
+    const panels = withCut()
+    const left = byId(panels, 'drawer-top-back-left')
+    const right = byId(panels, 'drawer-top-back-right')
+
+    expect(minCorner(right).x - (minCorner(left).x + left.length)).toBe(164)
+    expect(left.length + 164 + right.length).toBe(477)
+    expect(left.width).toBe(right.width)
+    expect(panels.some((panel) => panel.id === 'drawer-top-back')).toBe(false)
+    expect(byId(panels, 'drawer-bottom-back').length).toBe(477)
+  })
+
+  it('centres the gap by default, to the nearest half millimetre', () => {
+    expect(Math.abs(gapCentre(withCut()) - 300)).toBeLessThanOrEqual(0.5)
+  })
+
+  it('moves the gap to a custom position', () => {
+    const panels = withCut({ siphonPosition: 'custom', siphonX: 250 })
+    expect(Math.abs(gapCentre(panels) - 250)).toBeLessThanOrEqual(0.5)
+  })
+
+  it('adds no extra board panels for the cut-out', () => {
+    expect(withCut().filter((panel) => panel.drawer === 'top')).toHaveLength(4)
   })
 })
 
@@ -204,23 +229,16 @@ describe('buildPanels — invariants', () => {
         const min = minCorner(panel)
         expect(min.x).toBeGreaterThanOrEqual(0)
         expect(min.y).toBeGreaterThanOrEqual(0)
-        expect(min.z).toBeGreaterThanOrEqual(-3)
+        expect(min.z).toBeGreaterThanOrEqual(0)
         expect(min.x + panel.size.x).toBeLessThanOrEqual(input.width)
         expect(min.y + panel.size.y).toBeLessThanOrEqual(input.height)
         expect(min.z + panel.size.z).toBeLessThanOrEqual(input.depth + 18)
 
-        for (const cutout of panel.cutouts) {
-          if (cutout.kind === 'hole') {
-            expect(cutout.u).toBeGreaterThanOrEqual(50)
-            expect(cutout.u).toBeLessThanOrEqual(panel.length - 50)
-            expect(cutout.v).toBeGreaterThan(0)
-            expect(cutout.v).toBeLessThan(panel.width)
-          } else {
-            expect(cutout.u).toBeGreaterThanOrEqual(10)
-            expect(cutout.u + cutout.length).toBeLessThanOrEqual(panel.length)
-            expect(cutout.width).toBeGreaterThan(0)
-            expect(cutout.v + cutout.width).toBeLessThanOrEqual(panel.width)
-          }
+        for (const hole of panel.cutouts) {
+          expect(hole.u).toBeGreaterThanOrEqual(50)
+          expect(hole.u).toBeLessThanOrEqual(panel.length - 50)
+          expect(hole.v).toBeGreaterThan(0)
+          expect(hole.v).toBeLessThan(panel.width)
         }
       }
 

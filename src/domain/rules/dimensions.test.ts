@@ -34,8 +34,6 @@ describe('R1 clampDimensions', () => {
     ['height', 601, 600],
     ['depth', 389, 390],
     ['depth', 701, 700],
-    ['siphonOffset', 199, 200],
-    ['siphonOffset', 237, 236],
     ['edgeHandleThickness', 0, 1],
     ['edgeHandleThickness', 5, 4],
   ] as const)('clamps %s %d to %d', (field, from, to) => {

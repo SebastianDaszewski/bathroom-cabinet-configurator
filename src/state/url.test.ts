@@ -30,9 +30,9 @@ describe('encodeConfig', () => {
   it('flattens drawers and writes booleans as 0/1', () => {
     const query = encodeConfig({
       ...DEFAULT_CONFIG,
-      drawers: { ...DEFAULT_CONFIG.drawers, top: { length: 400, siphonCut: false } },
+      drawers: { ...DEFAULT_CONFIG.drawers, top: { length: 400, siphonCut: true } },
     })
-    expect(query).toBe('drawers.top.length=400&drawers.top.siphonCut=0')
+    expect(query).toBe('drawers.top.length=400&drawers.top.siphonCut=1')
   })
 })
 
