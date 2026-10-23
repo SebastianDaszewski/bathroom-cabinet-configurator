@@ -183,6 +183,19 @@ All rates live in one `pricing.config.ts`. Calibration target (sanity check
 against the reference, not a copy): default config ≈ 1200–1250 PLN, width
 500 → 1200 adds ≈ 0.4 PLN/mm, height ≈ 0.35 PLN/mm.
 
+Implementation notes:
+
+- `price(config, panels) → { total, lines[] }`, each line
+  `{ category, label, quantity, unit, unitPrice, amount }`; `subtotals(lines)`
+  sums the five categories for the breakdown.
+- Money is integer grosze in the domain; the UI formats it as PLN.
+- The margin is included in every line (each line rounded on its own) and
+  `total` is the sum of the lines, so the breakdown always adds up.
+- Boards are grouped by material + board + decor; drawer boxes (16 mm) have
+  their own rate. Edge-handle profile is hardware, grip-groove milling is
+  machining, both priced per metre of front.
+- Rates are gross (VAT included), no separate VAT line.
+
 The UI shows the total and an expandable breakdown (boards / edging / hardware /
 machining / labour).
 
