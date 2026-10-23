@@ -23,5 +23,6 @@ Keep both in sync with the code; tick off milestones in `progress.md`.
 
 - Every rule, the panel builder and pricing have unit tests next to the file (`*.test.ts`).
 - Small, focused changes; one milestone from the spec per PR.
+- No comments in code or config files (JSDoc included). Names and tests carry the intent.
 - Commit messages, PR titles and branch names in English.
 - Do not commit, push or merge — the user does that.

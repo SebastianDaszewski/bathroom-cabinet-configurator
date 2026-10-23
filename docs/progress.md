@@ -34,7 +34,15 @@ every milestone.
       Vitest, oxlint (Vite template default, replaces ESLint), Prettier, GitHub
       Actions CI, README, CLAUDE.md. Placeholder 3D box in `App.tsx`.
       Known: bundle ≈ 1.1 MB because of Three.js — code-split in milestone 5.
-- [ ] 2. Domain: schema, catalog, rules R1–R10 + tests
+- [x] **2. Domain** — `schema.ts` (Zod, defaults, lenient `parseConfig`),
+      `catalog.ts` (4 boards, 8 decors, 2 runners), `constants.ts`, rules
+      R1–R10 in `domain/rules/` with `normalize()` + `allowed*` helpers for the
+      UI. 86 unit tests incl. idempotency of `normalize()`.
+      Decisions: R4 — opening/front type win, drilling resets to `none`;
+      R10 — odd mm goes to the top front; R6 — spacing falls back to the
+      largest multiple of 32 that fits; R8 is dormant with the current ranges
+      (limit ≥ 344 vs. max 236), kept as a guard; drawer boxes are always
+      chipboard; adjustment reasons in English.
 - [ ] 3. Panels + cut list + tests
 - [ ] 4. Pricing + tests
 - [ ] 5. 3D scene from panels
