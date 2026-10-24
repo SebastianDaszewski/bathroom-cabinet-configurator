@@ -53,7 +53,6 @@ The UI is in Polish (the target market); code and documentation are in English.
 | -------------------------------------------- | ------------------------------------------------- |
 | [docs/architecture.md](docs/architecture.md) | Layers, data flow, how to extend it               |
 | [docs/spec.md](docs/spec.md)                 | Parameters, rules, panels, pricing                |
-| [docs/progress.md](docs/progress.md)         | Milestones and the decisions behind them          |
 | [docs/ai-workflow.md](docs/ai-workflow.md)   | How the AI agent was planned, checked and limited |
 | [CLAUDE.md](CLAUDE.md)                       | Rules the agent follows in this repository        |
 

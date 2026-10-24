@@ -5,6 +5,7 @@ import { MathUtils, type Group } from 'three'
 const DAMPING = 4
 const CLICK_TOLERANCE_PX = 4
 const SETTLED = 0.0001
+const MAX_FRAME_STEP = 1 / 30
 
 function prefersReducedMotion(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -37,7 +38,8 @@ export function DrawerGroup({ offset, onToggle, children }: DrawerGroupProps) {
   useFrame((_, delta) => {
     const current = group.current
     if (!current) return
-    const next = MathUtils.damp(current.position.z, offset, DAMPING, delta)
+    const step = Math.min(delta, MAX_FRAME_STEP)
+    const next = MathUtils.damp(current.position.z, offset, DAMPING, step)
     const settled = reducedMotion || Math.abs(next - offset) < SETTLED
     current.position.z = settled ? offset : next
     if (!settled) invalidate()
