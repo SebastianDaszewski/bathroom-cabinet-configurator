@@ -1,5 +1,5 @@
-import { findBoard, findDecor, findRunner } from './catalog'
-import type { Panel, PanelMaterial } from './panels'
+import { findBoard, findDecor, findHandleFinish, findHandleStyle, findRunner } from './catalog'
+import { edgeProfileSpan, panelHoles, type Panel, type PanelMaterial } from './panels'
 import { PRICING } from './pricing.config'
 import { DRAWER_IDS, type Config } from './schema'
 
@@ -101,10 +101,7 @@ function frontsLength(panels: readonly Panel[]): number {
 }
 
 function holeCount(panels: readonly Panel[]): number {
-  return panels.reduce(
-    (sum, panel) => sum + panel.cutouts.filter((cutout) => cutout.kind === 'hole').length,
-    0,
-  )
+  return panels.reduce((sum, panel) => sum + panelHoles(panel).length, 0)
 }
 
 function hardwareLines(config: Config, panels: readonly Panel[]): PriceLine[] {
@@ -120,17 +117,29 @@ function hardwareLines(config: Config, panels: readonly Panel[]): PriceLine[] {
       line('hardware', 'Tip-On (otwieranie przez naciśnięcie)', drawers, 'szt.', PRICING.tipOnUnit),
     )
   }
+  const finish = findHandleFinish(config.handleFinish)
   if (handles > 0) {
-    lines.push(line('hardware', 'Uchwyty', handles, 'szt.', PRICING.handle))
+    const style = findHandleStyle(config.handleStyle)
+    lines.push(
+      line(
+        'hardware',
+        `Uchwyty: ${style.name.toLowerCase()}, ${finish.name.toLowerCase()}`,
+        handles,
+        'szt.',
+        PRICING.handle[style.id] + PRICING.handleFinish[finish.id],
+      ),
+    )
   }
   if (config.frontType === 'edge-handle') {
     lines.push(
       line(
         'hardware',
-        'Profil uchwytu krawędziowego',
-        frontsLength(panels),
+        `Profil uchwytu krawędziowego: ${finish.name.toLowerCase()}`,
+        panels
+          .filter((panel) => panel.material === 'front')
+          .reduce((sum, front) => sum + edgeProfileSpan(config, front).length / MM_PER_M, 0),
         'm',
-        PRICING.edgeHandleProfilePerM,
+        PRICING.edgeHandleProfilePerM + PRICING.edgeHandleFinishPerM[finish.id],
       ),
     )
   }

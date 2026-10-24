@@ -1,5 +1,5 @@
 import { findBoard, findDecor } from './catalog'
-import type { Edges, GrainDirection, Panel } from './panels'
+import { panelGrip, panelHoles, type Edges, type GrainDirection, type Panel } from './panels'
 
 export interface CutListRow {
   name: string
@@ -39,9 +39,10 @@ function decorLabel(panel: Panel): string {
 
 function panelNotes(panel: Panel): string {
   const notes: string[] = []
-  if (panel.cutouts.length > 0) {
-    notes.push(`Otwory Ø${panel.cutouts[0].diameter}: ${panel.cutouts.length} szt.`)
-  }
+  const holes = panelHoles(panel)
+  if (holes.length > 0) notes.push(`Otwory Ø${holes[0].diameter}: ${holes.length} szt.`)
+  const grip = panelGrip(panel)
+  if (grip) notes.push(`Frezowanie uchwytu w licu ${grip.height}×${grip.depth}`)
   if (panel.continuousGrain && panel.grain) notes.push('Ciągłe usłojenie frontów')
   return notes.join(', ')
 }

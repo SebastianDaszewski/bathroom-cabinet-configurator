@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest'
+import { findHandleFinish } from '../domain/catalog'
 import { buildPanels } from '../domain/panels'
 import { normalize } from '../domain/rules'
 import { DEFAULT_CONFIG, type Config } from '../domain/schema'
 import { cabinetCentre } from './geometry'
 import {
+  BOW_RISE,
   CLOSED_DRAWERS,
   drawerOffsets,
-  GROOVE_COLOR,
+  edgeProfileSection,
   hardwareItems,
   HANDLE_OVERHANG,
   HANDLE_STANDOFF,
-  METAL_COLOR,
   METAL_SIDE_THICKNESS,
   toggleAllDrawers,
   TRAY_COLOR,
@@ -22,6 +23,7 @@ const config = (overrides: Partial<Config> = {}): Config =>
   normalize({ ...DEFAULT_CONFIG, ...overrides }).config
 
 const centre = cabinetCentre(DEFAULT_CONFIG)
+const steel = findHandleFinish('steel').color
 
 const itemsFor = (input: Config) => hardwareItems(input, buildPanels(input))
 
@@ -53,7 +55,8 @@ describe('hardwareItems', () => {
     expect(bar.position[1]).toBeCloseTo((251 + 124.5 - centre.y) / 1000)
     expect(bar.position[2]).toBeCloseTo((518 + HANDLE_STANDOFF - centre.z) / 1000)
     expect(bar.length).toBeCloseTo((128 + 2 * HANDLE_OVERHANG) / 1000)
-    expect(bar).toMatchObject({ axis: 'x', drawer: 'top', color: METAL_COLOR })
+    expect(bar).toMatchObject({ axis: 'x', drawer: 'top', color: steel })
+    if (left.shape !== 'cylinder' || right.shape !== 'cylinder') throw new Error('expected posts')
     expect(left.position[0]).toBeCloseTo(-0.064)
     expect(right.position[0]).toBeCloseTo(0.064)
   })
@@ -65,24 +68,73 @@ describe('hardwareItems', () => {
     expect(bars).toHaveLength(4)
   })
 
-  it('puts an edge profile on top of each front', () => {
+  it('puts an edge profile along the top edge of each front', () => {
     const items = frontItemsFor(config({ frontType: 'edge-handle', edgeHandleThickness: 4 }))
     const [top] = items
-    if (top.shape !== 'box') throw new Error('expected a box')
+    if (top.shape !== 'profile') throw new Error('expected a profile')
 
     expect(items).toHaveLength(2)
-    expect(top.size).toEqual([0.596, 0.004, 0.018])
-    expect(top.position[1]).toBeCloseTo((251 + 245 + 2 - centre.y) / 1000)
+    expect(top.length).toBeCloseTo(0.596)
+    expect(top.origin[1]).toBeCloseTo((251 + 245 - centre.y) / 1000)
+    expect(top.origin[2]).toBeCloseTo((500 - centre.z) / 1000)
+    expect(top.color).toBe(steel)
+  })
+
+  it('centres a shorter edge profile on the front', () => {
+    const [top] = frontItemsFor(config({ frontType: 'edge-handle', edgeHandleLength: '150' }))
+    if (top.shape !== 'profile') throw new Error('expected a profile')
+    expect(top.length).toBeCloseTo(0.15)
+    expect(top.origin[0]).toBeCloseTo((2 + (596 - 150) / 2 - centre.x) / 1000)
+  })
+
+  it('shapes the edge profile as a cap with a finger lip in front of the face', () => {
+    const section = edgeProfileSection(4, 18)
+    const ts = section.map(([t]) => t)
+    const vs = section.map(([, v]) => v)
+
+    expect(Math.min(...ts)).toBe(0)
+    expect(Math.max(...ts)).toBe(28)
+    expect(Math.max(...vs)).toBe(4)
+    expect(Math.min(...vs)).toBe(-14)
+    expect(section).toContainEqual([26.5, -14])
   })
 
   it('shows no profile on fronts prepared for an edge handle', () => {
     expect(frontItemsFor(config({ frontType: 'edge-handle-ready' }))).toEqual([])
   })
 
-  it('marks the grip groove at the top of each front', () => {
-    const items = frontItemsFor(config({ frontType: 'grip-groove' }))
-    expect(items).toHaveLength(2)
-    expect(items[0]).toMatchObject({ shape: 'box', color: GROOVE_COLOR, drawer: 'top' })
+  it('adds no hardware to grip-groove fronts, the grip is milled into the board', () => {
+    expect(frontItemsFor(config({ frontType: 'grip-groove' }))).toEqual([])
+  })
+
+  it('bends a bow handle from hole to hole', () => {
+    const [bow] = frontItemsFor(config({ handleDrilling: 'single', handleStyle: 'bow' }))
+    if (bow.shape !== 'tube') throw new Error('expected a tube')
+    const [start, control, end] = bow.points
+    const surface = (518 - centre.z) / 1000
+
+    expect(start[0]).toBeCloseTo(-0.064)
+    expect(end[0]).toBeCloseTo(0.064)
+    expect(start[2]).toBeCloseTo(surface)
+    expect(control[2]).toBeCloseTo(surface + (2 * BOW_RISE) / 1000)
+  })
+
+  it('builds a square handle from a bar and two legs', () => {
+    const items = frontItemsFor(config({ handleDrilling: 'single', handleStyle: 'square' }))
+    expect(items.filter((item) => item.drawer === 'top').map((item) => item.id)).toEqual([
+      'front-top-handle-0-bar',
+      'front-top-handle-0-leg-left',
+      'front-top-handle-0-leg-right',
+    ])
+    expect(items.every((item) => item.shape === 'box')).toBe(true)
+  })
+
+  it('colours handles and profiles with the chosen finish', () => {
+    const gold = findHandleFinish('gold').color
+    const handles = frontItemsFor(config({ handleDrilling: 'single', handleFinish: 'gold' }))
+    const profile = frontItemsFor(config({ frontType: 'edge-handle', handleFinish: 'gold' }))
+    expect(handles.every((item) => item.color === gold)).toBe(true)
+    expect(profile.every((item) => item.color === gold)).toBe(true)
   })
 })
 

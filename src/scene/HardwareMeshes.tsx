@@ -1,5 +1,12 @@
 import { useEffect, useMemo, type ReactNode } from 'react'
-import { ExtrudeGeometry, Shape, Vector2 } from 'three'
+import {
+  ExtrudeGeometry,
+  QuadraticBezierCurve3,
+  Shape,
+  TubeGeometry,
+  Vector2,
+  Vector3,
+} from 'three'
 import type { HardwareItem } from './hardware'
 import type { Point } from './panelShape'
 
@@ -9,8 +16,41 @@ const ROTATIONS = {
   z: [Math.PI / 2, 0, 0],
 } as const
 const LAY_FLAT = [-Math.PI / 2, 0, 0] as const
+const ALONG_X = [0, -Math.PI / 2, 0] as const
+const TUBE_SEGMENTS = 32
+const TUBE_SIDES = 12
 
 type TrayItem = Extract<HardwareItem, { shape: 'tray' }>
+type TubeItem = Extract<HardwareItem, { shape: 'tube' }>
+type ProfileItem = Extract<HardwareItem, { shape: 'profile' }>
+
+function TubeMesh({ item, material }: { item: TubeItem; material: ReactNode }) {
+  const geometry = useMemo(() => {
+    const [start, control, end] = item.points.map((point) => new Vector3(...point))
+    const curve = new QuadraticBezierCurve3(start, control, end)
+    return new TubeGeometry(curve, TUBE_SEGMENTS, item.radius, TUBE_SIDES, false)
+  }, [item.points, item.radius])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  return <mesh geometry={geometry}>{material}</mesh>
+}
+
+function ProfileMesh({ item, material }: { item: ProfileItem; material: ReactNode }) {
+  const geometry = useMemo(() => {
+    const shape = new Shape(item.section.map(([t, v]) => new Vector2(t, v)))
+    return new ExtrudeGeometry(shape, { depth: item.length, bevelEnabled: false })
+  }, [item.section, item.length])
+
+  useEffect(() => () => geometry.dispose(), [geometry])
+
+  const [x, y, z] = item.origin
+  return (
+    <mesh geometry={geometry} position={[x + item.length, y, z]} rotation={ALONG_X}>
+      {material}
+    </mesh>
+  )
+}
 
 function extrudeFlat(points: Point[], depth: number): ExtrudeGeometry {
   const shape = new Shape(points.map(([u, v]) => new Vector2(u, -v)))
@@ -47,6 +87,8 @@ function HardwareMesh({ item }: { item: HardwareItem }) {
   )
 
   if (item.shape === 'tray') return <TrayMesh item={item} material={material} />
+  if (item.shape === 'tube') return <TubeMesh item={item} material={material} />
+  if (item.shape === 'profile') return <ProfileMesh item={item} material={material} />
 
   if (item.shape === 'box') {
     return (

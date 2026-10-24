@@ -8,7 +8,9 @@ import {
   panelBasis,
   panelMatrix,
   panelMeshes,
+  gripSection,
   panelOutline,
+  panelParts,
   textureOffset,
 } from './panelShape'
 
@@ -26,6 +28,49 @@ const apply = (m: number[], [x, y, z]: [number, number, number]) => [
   m[1] * x + m[5] * y + m[9] * z + m[13],
   m[2] * x + m[6] * y + m[10] * z + m[14],
 ]
+
+describe('panelParts', () => {
+  it('extrudes a plain panel as one slab through its thickness', () => {
+    expect(panelParts(panel('front-top'))).toEqual([
+      expect.objectContaining({ kind: 'slab', from: 0, to: 18 }),
+    ])
+  })
+
+  it('extrudes a grip-groove front from its section along the whole length', () => {
+    const front = panel('front-top', config({ frontType: 'grip-groove' }))
+    const [part] = panelParts(front)
+    expect(part).toMatchObject({ kind: 'section', length: front.length })
+  })
+})
+
+describe('gripSection', () => {
+  const grip = { kind: 'grip', height: 35, depth: 12, pocketWidth: 8, pocketDepth: 10 } as const
+  const section = gripSection(245, 18, grip)
+  const ts = section.map(([t]) => t)
+  const vs = section.map(([, v]) => v)
+
+  it('keeps the full face below the lip and a thin back wall up to the top', () => {
+    expect(section.slice(0, 4)).toEqual([
+      [0, 0],
+      [18, 0],
+      [18, 210],
+      [14, 210],
+    ])
+    expect(section.slice(-2)).toEqual([
+      [6, 245],
+      [0, 245],
+    ])
+  })
+
+  it('hollows a rounded finger pocket behind the lip', () => {
+    const pocket = section.slice(4, -2)
+    expect(Math.min(...vs)).toBe(0)
+    expect(Math.min(...pocket.map(([, v]) => v))).toBeCloseTo(200)
+    expect(Math.min(...pocket.map(([t]) => t))).toBeCloseTo(6)
+    expect(Math.max(...pocket.map(([t]) => t))).toBeCloseTo(14)
+    expect(Math.max(...ts)).toBe(18)
+  })
+})
 
 describe('panelOutline', () => {
   it('is a plain rectangle without cut-outs', () => {

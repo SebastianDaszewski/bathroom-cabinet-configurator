@@ -1,10 +1,11 @@
-import { findDecor, isGrained } from '../../domain/catalog'
+import { findDecor, findHandleFinish, findHandleStyle, isGrained } from '../../domain/catalog'
 import { topDepth, topThickness } from '../../domain/panels'
 import { hasEdgeHandle, topLength } from '../../domain/rules'
 import { priceDelta } from '../../domain/priceDelta'
 import { DEFAULT_CONFIG, DRAWER_IDS, type Config, type DrawerId } from '../../domain/schema'
 import {
   boardLabel,
+  EDGE_HANDLE_LENGTH_LABELS,
   FRONT_GRAIN_LABELS,
   FRONT_TYPE_LABELS,
   HANDLE_DRILLING_LABELS,
@@ -144,25 +145,47 @@ function drawerRows(config: Config): SummaryRow[] {
 
 function frontRows(config: Config): SummaryRow[] {
   const front = FRONT_TYPE_LABELS[config.frontType]
+  const finish = findHandleFinish(config.handleFinish).name.toLowerCase()
+  const style = findHandleStyle(config.handleStyle).name.toLowerCase()
   const handles =
     config.handleDrilling === 'none'
       ? HANDLE_DRILLING_LABELS.none
       : [
-          HANDLE_DRILLING_LABELS[config.handleDrilling],
+          `${HANDLE_DRILLING_LABELS[config.handleDrilling]} (${style}, ${finish})`,
           `rozstaw ${config.handleSpacing} mm`,
           HANDLE_POSITION_LABELS[config.handlePosition].toLowerCase(),
         ].join(', ')
+  const frontValue =
+    config.frontType === 'edge-handle'
+      ? `${front}, profil ${config.edgeHandleThickness} mm, ${EDGE_HANDLE_LENGTH_LABELS[config.edgeHandleLength].toLowerCase()}, ${finish}`
+      : hasEdgeHandle(config)
+        ? `${front}, profil ${config.edgeHandleThickness} mm`
+        : config.frontType === 'grip-groove'
+          ? `${front}, wysokość frezu ${config.gripHeight} mm`
+          : front
 
   return [
     {
       label: 'Front',
-      value: hasEdgeHandle(config) ? `${front}, profil ${config.edgeHandleThickness} mm` : front,
-      reset: defaults('frontType', 'edgeHandleThickness'),
+      value: frontValue,
+      reset: defaults(
+        'frontType',
+        'edgeHandleThickness',
+        'edgeHandleLength',
+        'gripHeight',
+        'handleFinish',
+      ),
     },
     {
       label: 'Uchwyty',
       value: handles,
-      reset: defaults('handleDrilling', 'handleSpacing', 'handlePosition'),
+      reset: defaults(
+        'handleDrilling',
+        'handleSpacing',
+        'handlePosition',
+        'handleStyle',
+        'handleFinish',
+      ),
     },
   ]
 }

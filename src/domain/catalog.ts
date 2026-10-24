@@ -1,4 +1,4 @@
-import type { BoardType, RunnerType } from './schema'
+import type { BoardType, HandleFinish, HandleStyle, RunnerType } from './schema'
 
 export interface Board {
   id: BoardType
@@ -118,6 +118,37 @@ export const DECORS: readonly Decor[] = [
     pricePerM2Modifier: 0.95,
   },
 ]
+
+export interface HandleStyleSpec {
+  id: HandleStyle
+  name: string
+}
+
+export interface HandleFinishSpec {
+  id: HandleFinish
+  name: string
+  color: string
+}
+
+export const HANDLE_STYLE_SPECS: readonly HandleStyleSpec[] = [
+  { id: 'bar', name: 'Reling' },
+  { id: 'bow', name: 'Łukowy' },
+  { id: 'square', name: 'Kątowy' },
+]
+
+export const HANDLE_FINISH_SPECS: readonly HandleFinishSpec[] = [
+  { id: 'steel', name: 'Stal szczotkowana', color: '#a9b0b3' },
+  { id: 'black', name: 'Czarny mat', color: '#26292b' },
+  { id: 'gold', name: 'Złoty szczotkowany', color: '#b8955a' },
+]
+
+export function findHandleStyle(id: HandleStyle): HandleStyleSpec {
+  return HANDLE_STYLE_SPECS.find((style) => style.id === id) ?? HANDLE_STYLE_SPECS[0]
+}
+
+export function findHandleFinish(id: HandleFinish): HandleFinishSpec {
+  return HANDLE_FINISH_SPECS.find((finish) => finish.id === id) ?? HANDLE_FINISH_SPECS[0]
+}
 
 export const RUNNERS: readonly Runner[] = [
   {

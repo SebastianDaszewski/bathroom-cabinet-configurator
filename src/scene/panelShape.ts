@@ -1,5 +1,12 @@
 import { findDecor, type DecorFinish } from '../domain/catalog'
-import type { Axis, Panel, Vec3 } from '../domain/panels'
+import {
+  panelGrip,
+  panelHoles,
+  type Axis,
+  type Grip,
+  type Panel,
+  type Vec3,
+} from '../domain/panels'
 import type { Config, DrawerId } from '../domain/schema'
 import { cabinetCentre, panelColor, toMetres, type Vec3Tuple } from './geometry'
 
@@ -16,6 +23,21 @@ export interface PanelOutline {
   holes: Hole[]
 }
 
+interface SlabPart {
+  kind: 'slab'
+  outline: PanelOutline
+  from: number
+  to: number
+}
+
+interface SectionPart {
+  kind: 'section'
+  section: Point[]
+  length: number
+}
+
+export type PanelPart = SlabPart | SectionPart
+
 export type GrainAxis = 'u' | 'v'
 
 export interface PanelMesh {
@@ -25,22 +47,61 @@ export interface PanelMesh {
   finish: DecorFinish
   grainAxis: GrainAxis | null
   textureOffset: Point
-  thickness: number
-  outline: PanelOutline
+  parts: PanelPart[]
   matrix: number[]
 }
 
-export function panelOutline(panel: Panel): PanelOutline {
-  const { length: l, width: w } = panel
-  const points: Point[] = [
+function rectangle(length: number, width: number): Point[] {
+  return [
     [0, 0],
-    [l, 0],
-    [l, w],
-    [0, w],
+    [length, 0],
+    [length, width],
+    [0, width],
   ]
-  const holes = panel.cutouts.map((hole) => ({ u: hole.u, v: hole.v, radius: hole.diameter / 2 }))
+}
 
-  return { points, holes }
+export function panelOutline(panel: Panel): PanelOutline {
+  const holes = panelHoles(panel).map((hole) => ({
+    u: hole.u,
+    v: hole.v,
+    radius: hole.diameter / 2,
+  }))
+  return { points: rectangle(panel.length, panel.width), holes }
+}
+
+const POCKET_SEGMENTS = 8
+
+export function gripSection(width: number, thickness: number, grip: Grip): Point[] {
+  const wall = thickness - grip.depth
+  const lip = width - grip.height
+  const radius = grip.pocketWidth / 2
+  const centre: Point = [wall + radius, lip - grip.pocketDepth + radius]
+  const pocket = Array.from({ length: POCKET_SEGMENTS + 1 }, (_, index): Point => {
+    const angle = -(Math.PI * index) / POCKET_SEGMENTS
+    return [centre[0] + radius * Math.cos(angle), centre[1] + radius * Math.sin(angle)]
+  })
+
+  return [
+    [0, 0],
+    [thickness, 0],
+    [thickness, lip],
+    [wall + grip.pocketWidth, lip],
+    ...pocket,
+    [wall, width],
+    [0, width],
+  ]
+}
+
+export function panelParts(panel: Panel): PanelPart[] {
+  const grip = panelGrip(panel)
+  if (!grip) return [{ kind: 'slab', outline: panelOutline(panel), from: 0, to: panel.thickness }]
+  return [
+    {
+      kind: 'section',
+      section: gripSection(panel.width, panel.thickness, grip),
+      length: panel.length,
+    },
+  ]
 }
 
 const UNIT: Record<Axis, Vec3Tuple> = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }
@@ -149,8 +210,7 @@ export function panelMeshes(config: Config, panels: readonly Panel[]): PanelMesh
     finish: findDecor(panel.decor)?.finish ?? 'plain',
     grainAxis: grainAxis(panel),
     textureOffset: textureOffset(panel),
-    thickness: panel.thickness,
-    outline: panelOutline(panel),
+    parts: panelParts(panel),
     matrix: panelMatrix(panel, centre),
   }))
 }

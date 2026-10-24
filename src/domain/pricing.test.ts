@@ -128,6 +128,22 @@ describe('price — hardware and machining', () => {
     expect(find(double, 'Otwory')?.quantity).toBe(8)
   })
 
+  it('prices handles by style and finish', () => {
+    const line = (overrides: Partial<Config>) =>
+      find(quote({ handleDrilling: 'single', ...overrides }), 'Uchwyty')
+
+    expect(line({})).toMatchObject({
+      label: 'Uchwyty: reling, stal szczotkowana',
+      unitPrice: grosze(35),
+    })
+    expect(line({ handleStyle: 'bow' })?.unitPrice).toBe(grosze(39))
+    expect(line({ handleStyle: 'square', handleFinish: 'gold' })).toMatchObject({
+      label: 'Uchwyty: kątowy, złoty szczotkowany',
+      unitPrice: grosze(45 + 9),
+    })
+    expect(line({ handleFinish: 'black' })?.unitPrice).toBe(grosze(35 + 4))
+  })
+
   it('has no handle lines without drilling', () => {
     expect(find(quote(), 'Uchwyty')).toBeUndefined()
     expect(find(quote(), 'Otwory')).toBeUndefined()
@@ -152,6 +168,20 @@ describe('price — hardware and machining', () => {
     expect(find(quote({ frontType: 'edge-handle' }), 'Profil uchwytu')).toMatchObject({
       unit: 'm',
       quantity: 1.192,
+    })
+  })
+
+  it('prices a shorter edge profile by its own length', () => {
+    expect(
+      find(quote({ frontType: 'edge-handle', edgeHandleLength: '300' }), 'Profil uchwytu'),
+    ).toMatchObject({ quantity: 0.6 })
+  })
+
+  it('adds the finish surcharge to the edge profile', () => {
+    const profile = find(quote({ frontType: 'edge-handle', handleFinish: 'gold' }), 'Profil')
+    expect(profile).toMatchObject({
+      label: 'Profil uchwytu krawędziowego: złoty szczotkowany',
+      unitPrice: grosze(45 + 12),
     })
   })
 

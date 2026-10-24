@@ -77,6 +77,8 @@ All lengths in millimetres (integers).
 | `continuousGrain`     | bool     | grain continues across both fronts (R14)                                                                     | `false`      |
 | `frontType`           | enum     | `standard`, `grip-groove`, `edge-handle`, `edge-handle-ready` (shortened for a profile that is not supplied) | `standard`   |
 | `edgeHandleThickness` | int      | 1–4                                                                                                          | 2            |
+| `gripHeight`          | int      | 25–60, height of the milled grip in the face                                                                 | 35           |
+| `edgeHandleLength`    | enum     | `full`, `450`, `300`, `150` (mm, a shorter profile is centred on the front)                                  | `full`       |
 
 ### 2.4 Handle drilling
 
@@ -85,6 +87,12 @@ All lengths in millimetres (integers).
 | `handleDrilling` | enum | `none`, `single`, `double` | `none`   |
 | `handleSpacing`  | int  | 32–480, step 32            | 128      |
 | `handlePosition` | enum | `top-50`, `center`         | `center` |
+| `handleStyle`    | enum | `bar`, `bow`, `square`     | `bar`    |
+| `handleFinish`   | enum | `steel`, `black`, `gold`   | `steel`  |
+
+`handleStyle` applies to drilled handles. `handleFinish` applies to drilled
+handles and to the edge-handle profile; both are kept but unused when the front
+has neither.
 
 ### 2.5 Decors
 
@@ -172,7 +180,18 @@ drawers are opened in 3D), `null` otherwise.
 - `l1`/`l2` are the two edges along the length, `w1`/`w2` along the width.
 - `cutouts` are in panel coordinates (`u` along the length, `v` along the
   width, from the panel's minimum corner): handle holes Ø5 (two per handle,
-  `handleSpacing` apart, at the front's centre or 50 mm from its top).
+  `handleSpacing` apart, at the front's centre or 50 mm from its top) and, on
+  `grip-groove` fronts, a J-shaped grip milled into the face along the top edge:
+  the face is cut back `GRIP_DEPTH` 12 mm over the top `gripHeight` mm,
+  leaving a 6 mm wall, and a rounded finger pocket (`GRIP_POCKET_WIDTH` 8 mm,
+  `GRIP_POCKET_DEPTH` 10 mm) goes down behind the lip of the face. The 3D view
+  extrudes such a front from this section along its length; the cut list notes
+  it as `Frezowanie uchwytu w licu {gripHeight}×12`.
+- The edge-handle profile is an aluminium cap on the top edge of the front
+  (full length or `edgeHandleLength`, centred):
+  `edgeHandleThickness` thick, covering the front and 10 mm in front of it, with
+  an 18 mm lip hanging down for the fingers. It is hardware: drawn in 3D, not in
+  the cut list.
 - Siphon cut-out: the drawer bottom stays whole; the
   drawer back has a gap of `siphonCutWidth` through its full height for the pipe, so it is
   made of two pieces (left / right, rounded to whole mm, so the gap may sit up to
@@ -215,6 +234,10 @@ Implementation notes:
 - Boards are grouped by material + board + decor; drawer boxes (16 mm) have
   their own rate. Edge-handle profile is hardware, grip-groove milling is
   machining, both priced per metre of front.
+- A handle costs the style rate (`bar` 35, `bow` 39, `square` 45 PLN) plus the
+  finish surcharge (`black` +4, `gold` +9). The edge profile costs 45 PLN/m plus
+  the finish surcharge per metre (`black` +6, `gold` +12), by the profile's own
+  length.
 - Rates are gross (VAT included), no separate VAT line.
 
 The UI shows the total and an expandable breakdown (boards / edging / hardware /

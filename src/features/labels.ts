@@ -76,6 +76,25 @@ export const HANDLE_DRILLING_DESCRIPTIONS: Record<Config['handleDrilling'], stri
   double: 'Otwory pod dwa uchwyty na każdym froncie, do szerokich szafek.',
 }
 
+export const EDGE_HANDLE_LENGTH_LABELS: Record<Config['edgeHandleLength'], string> = {
+  full: 'Cała szerokość',
+  '450': '450 mm',
+  '300': '300 mm',
+  '150': '150 mm',
+}
+
+export const HANDLE_STYLE_DESCRIPTIONS: Record<Config['handleStyle'], string> = {
+  bar: 'Okrągły pręt na dwóch nóżkach, klasyczny i wygodny.',
+  bow: 'Wygięty łuk, miękka linia bez ostrych krawędzi.',
+  square: 'Prostokątny profil na kwadratowych nóżkach, nowoczesny i geometryczny.',
+}
+
+export const HANDLE_FINISH_DESCRIPTIONS: Record<Config['handleFinish'], string> = {
+  steel: 'Satynowa stal, pasuje do każdego dekoru.',
+  black: 'Głęboka czerń, mocny kontrast z jasnymi frontami.',
+  gold: 'Ciepły, szczotkowany złoty, dobrze wygląda z drewnem.',
+}
+
 export const TOP_THICKENING_DESCRIPTIONS: Record<Config['topThickening'], string> = {
   none: 'Blat z jednej płyty 18 mm.',
   double: 'Dwie sklejone płyty z jedną okleiną, krawędź 36 mm wygląda masywniej.',
@@ -107,6 +126,7 @@ const FIELD_LABELS: Record<string, string> = {
   siphonCutWidth: 'Szerokość wycięcia',
   siphonCutDepth: 'Długość wycięcia',
   edgeHandleThickness: 'Grubość uchwytu krawędziowego',
+  gripHeight: 'Wysokość frezu',
   handleDrilling: 'Uchwyty',
   handleSpacing: 'Rozstaw uchwytu',
 }

@@ -29,3 +29,9 @@ export const SIPHON_FRONT_MARGIN = 60
 export const HANDLE_HOLE_DIAMETER = 5
 
 export const HANDLE_TOP_OFFSET = 50
+
+export const GRIP_DEPTH = 12
+
+export const GRIP_POCKET_WIDTH = 8
+
+export const GRIP_POCKET_DEPTH = 10
