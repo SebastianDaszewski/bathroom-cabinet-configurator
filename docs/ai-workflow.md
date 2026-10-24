@@ -34,17 +34,21 @@ page shows how the agent was kept under control.
 
 ## Pull requests
 
-| PR                                                                               | Scope                                                    |
-| -------------------------------------------------------------------------------- | -------------------------------------------------------- |
-| [#1](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/1) | Domain: config schema, catalogue, rules                  |
-| [#2](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/2) | Panel builder and cut list with CSV                      |
-| [#3](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/3) | Cost-based pricing                                       |
-| [#4](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/4) | 3D scene from panels                                     |
-| [#5](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/5) | Polish stepper UI, store, URL sync                       |
-| [#6](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/6) | Cut-outs, handles, openable drawers                      |
-| [#7](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/7) | Countertop                                               |
-| [#8](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/8) | Textures, grain, lighting                                |
-| [#9](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/9) | Summary, CSV, mobile, Playwright, option prices, inquiry |
+| PR                                                                                 | Scope                                                             |
+| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| [#1](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/1)   | Domain: config schema, catalogue, rules                           |
+| [#2](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/2)   | Panel builder and cut list with CSV                               |
+| [#3](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/3)   | Cost-based pricing                                                |
+| [#4](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/4)   | 3D scene from panels                                              |
+| [#5](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/5)   | Polish stepper UI, store, URL sync                                |
+| [#6](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/6)   | Cut-outs, handles, openable drawers                               |
+| [#7](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/7)   | Countertop                                                        |
+| [#8](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/8)   | Textures, grain, lighting                                         |
+| [#9](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/9)   | Summary, CSV, mobile, Playwright, option prices, inquiry          |
+| [#10](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/10) | Live demo, repository docs, agent rules, CI with coverage and e2e |
+| [#11](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/11) | First drawer opening animates after idle                          |
+| [#12](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/12) | Handle styles and finishes, milled grip, edge profile length      |
+| [#13](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/pull/13) | Inquiry sent by e-mail through a serverless function              |
 
 ## Where review changed the result
 
@@ -65,6 +69,14 @@ The agent is fast and confident; the review is where the product got right.
   picture, drawers that should open on click, a reset button too close to
   "copy link" (now confirmed in a dialog), the mobile layout putting the 3D
   view below the form.
+- **Wrong geometry that passed every test.** The first milled grip was cut
+  into the back of the front, where no finger can reach. The tests checked the
+  dimensions the agent had chosen, not whether a person could open the drawer.
+  A photo of a real milled front showed the mistake; the grip is now a J-shaped
+  recess in the face with a finger pocket behind the lip.
+- **Green locally, red in CI.** A test waited 5 s for the scene; CI renders
+  without a GPU and needed longer. The agent's local runs could not catch it, CI
+  did, and the wait now matches what the slowest environment needs.
 - **Performance found by a flaky test.** An e2e test timed out because the
   canvas rendered 60 frames per second while idle. The fix — render on demand,
   compute the shadow once — made every e2e test about five times faster and
