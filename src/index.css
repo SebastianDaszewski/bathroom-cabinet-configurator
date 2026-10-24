@@ -941,6 +941,23 @@ button {
   font-size: var(--text-xs);
 }
 
+.form-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.form-status {
+  margin: 0 0 16px;
+  font-size: var(--text-sm);
+}
+
+.form-status[data-tone='error'] {
+  color: var(--danger);
+}
+
 .summary-actions {
   display: grid;
   gap: 8px;

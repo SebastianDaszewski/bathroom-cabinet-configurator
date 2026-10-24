@@ -30,18 +30,39 @@ flowchart LR
   scene --> ui
 ```
 
-| Layer          | Owns                                                       | May import        |
-| -------------- | ---------------------------------------------------------- | ----------------- |
-| `src/domain`   | Config, rules, panels, pricing, cut list, catalogue        | nothing but Zod   |
-| `src/state`    | Zustand store, URL encoding, localStorage                  | domain            |
-| `src/scene`    | 3D rendering of `Panel[]`, pure geometry/texture helpers   | domain, ui        |
-| `src/features` | Steps, price panel, summary, inquiry, sharing              | domain, state, ui |
-| `src/ui`       | Generic controls (fields, dialog), number and price format | domain types only |
+| Layer          | Owns                                                       | May import         |
+| -------------- | ---------------------------------------------------------- | ------------------ |
+| `src/domain`   | Config, rules, panels, pricing, cut list, catalogue        | nothing but Zod    |
+| `src/state`    | Zustand store, URL encoding, localStorage                  | domain             |
+| `src/scene`    | 3D rendering of `Panel[]`, pure geometry/texture helpers   | domain, ui         |
+| `src/features` | Steps, price panel, summary, inquiry, sharing              | domain, state, ui  |
+| `src/ui`       | Generic controls (fields, dialog), number and price format | domain types only  |
+| `src/server`   | Request handlers for the Vercel functions in `api/`        | the inquiry module |
 
 The two most important boundaries are enforced by oxlint
 (`no-restricted-imports` in `.oxlintrc.json`): the domain cannot import React,
 Three.js, Zustand or any upper layer, and the scene cannot read the store or
 the features. Breaking them fails `pnpm lint` and CI.
+
+## Inquiry e-mail
+
+```
+InquiryDialog → POST /api/inquiry → api/inquiry.ts → handleInquiry() → Resend → shop inbox
+```
+
+- `api/inquiry.ts` is a Vercel function; it only passes the request and
+  `RESEND_API_KEY` to `handleInquiry` in `src/server/inquiry.ts`, which is unit
+  tested with a fake `fetch`.
+- Vercel compiles functions file by file as ES modules, without a bundler, so
+  everything a function imports at run time must use explicit `.js` extensions.
+  The function therefore depends only on `src/features/inquiry/inquiry.ts`,
+  which imports nothing but Zod. `tsconfig.node.json` type-checks `api/` with
+  `nodenext` resolution, so a missing extension fails `pnpm typecheck`; oxlint
+  keeps `src/server` and `api` away from the other layers.
+- The server validates the payload with the same Zod schema as the form, caps
+  the request size, drops submissions with the hidden `website` field filled,
+  sends to the fixed `INQUIRY_EMAIL` and sets the customer as `reply_to`.
+- If sending fails, the dialog offers the `mailto:` link with the same message.
 
 ## Data flow
 
