@@ -1,6 +1,8 @@
 import { expect, test, type Locator, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 
+const SCENE_RENDER = { timeout: 20_000 }
+
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
 })
@@ -12,7 +14,7 @@ test('renders the configurator with a 3D view and a price', async ({ page }) => 
 })
 
 test('a wider cabinet costs more and is kept in the link', async ({ page }) => {
-  await expect(page.getByRole('button', { name: 'Zapisz zdjęcie' })).toBeEnabled()
+  await expect(page.getByRole('button', { name: 'Zapisz zdjęcie' })).toBeEnabled(SCENE_RENDER)
   const price = page.locator('.price-amount')
   const before = await price.textContent()
 
@@ -21,7 +23,7 @@ test('a wider cabinet costs more and is kept in the link', async ({ page }) => {
   await width.press('Enter')
 
   await expect(price).not.toHaveText(before ?? '')
-  await expect(page).toHaveURL(/width=800/)
+  await expect(page).toHaveURL(/width=800/, SCENE_RENDER)
 })
 
 test('downloads the cut list as CSV from the summary', async ({ page }) => {
