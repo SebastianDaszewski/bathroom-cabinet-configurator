@@ -15,7 +15,7 @@ const find = (result: Price, label: string): PriceLine | undefined =>
 
 const grosze = (pln: number) => Math.round(pln * PRICING.margin * 100)
 
-describe('price — calibration against the reference', () => {
+describe('price — calibration against the market targets', () => {
   it('prices the default config at 1200–1250 PLN', () => {
     const { total } = quote()
     expect(total).toBeGreaterThanOrEqual(120_000)
@@ -58,7 +58,7 @@ describe('price — totals', () => {
 })
 
 describe('price — siphon cut-out', () => {
-  it('adds about 44 PLN, like the reference', () => {
+  it('adds about 44 PLN', () => {
     const cut = quote({
       drawers: { top: { length: 450, siphonCut: true }, bottom: { length: 450, siphonCut: false } },
     })

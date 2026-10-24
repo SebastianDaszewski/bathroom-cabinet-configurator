@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 
-export interface Choice<T extends string | number> {
+interface Choice<T extends string | number> {
   value: T
   label: string
   disabled?: boolean

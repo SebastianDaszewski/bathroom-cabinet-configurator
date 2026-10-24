@@ -1,101 +1,93 @@
 # Bathroom Vanity Configurator
 
+[![CI](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/actions/workflows/ci.yml/badge.svg)](https://github.com/SebastianDaszewski/bathroom-cabinet-configurator/actions/workflows/ci.yml)
+
 A configurator for a made-to-measure, wall-hung bathroom vanity with two drawers
 and a countertop for a vessel basin. The customer sets dimensions, materials,
 drawers, fronts and handles; the app shows a live 3D model, a cost-based price
-with a breakdown, and a production cut list that can be downloaded as CSV.
+with what every choice adds, and a production cut list for the workshop.
 
-**Live demo:** _added after the first Vercel deployment_
+**Live demo:** https://bathroom-cabinet-configurator.vercel.app
+
+![Configurator with the drawers open](docs/screenshot.png)
 
 The UI is in Polish (the target market); code and documentation are in English.
 
-## What it does
+## What is not trivial here
 
-- **Dimensions** — carcass 500–1200 × 400–600 × 390–700 mm; countertop with
-  optional thickening (36 mm) and left / right / front extensions.
-- **Materials** — board type and decor for carcass, fronts, drawer boxes and
-  drawer bottoms; grain direction for sides and fronts, optional continuous
-  grain across both fronts.
-- **Drawers** — concealed (Tandem) or metal-box (Blum) runners, soft-close or
-  push-to-open, three lengths limited by depth, a siphon cut-out of
-  configurable size and position.
-- **Fronts and handles** — plain, milled grip, edge handle (with or without
-  the profile); single or double handle drilling with standard 32 mm spacing.
-- **3D view** — built from the same panel list as the cut list; procedural
-  wood / concrete / laminate textures oriented by grain; drawers open on click.
-- **Price** — boards by area, edge banding by length, hardware, machining and
-  labour, margin included per line, so the breakdown always adds up.
-- **Rules** — invalid combinations are corrected, never rejected: the app
-  explains each automatic change ("drawer shortened to 400 mm because…").
-- **Price per option** — every choice and every summary row shows what it
-  adds or saves, computed from the real price engine, not a lookup table.
-- **Summary** — grouped configuration, cut list, CSV download, an inquiry form
-  that opens the mail client with the configuration and link (no backend; set
-  `INQUIRY_EMAIL` in `src/features/inquiry/inquiry.ts`), sharing.
-- **3D tools** — camera views, PNG snapshot, fullscreen, drawers open on click.
-- **Sharing** — the configuration lives in the URL and in localStorage.
+- **A rule engine, not form validation.** 14 rules (R1–R14) keep any
+  combination buildable: drawer lengths follow the depth, handle spacing follows
+  the width, push-to-open removes handles, a countertop never exceeds one board.
+  Invalid input is corrected, never rejected, and every correction is explained.
+- **One model for 3D, price and production.** `buildPanels(config)` returns
+  every physical board with its size, position, edge banding, grain direction
+  and holes. The 3D view, the price and the cut list are all derived from it, so
+  they cannot disagree.
+- **Cost-based pricing.** Boards by area and decor, edge banding by length,
+  hardware, machining and labour, calibrated to market prices. The price change
+  next to each option is computed by pricing the configuration with and without
+  it, so side effects of the rules are included.
+- **Real geometry.** Holes and cut-outs are cut into the panels, drawers open,
+  textures follow the grain direction of each board, and the scene renders only
+  when something changes.
+- **Tested like a library.** 387 unit tests (100 % line coverage of the domain),
+  invariant tests over extreme configurations, and Playwright smoke tests on
+  desktop and mobile — all in CI with lint, types and an unused-code check.
 
-## Architecture
+## Features
 
-```
-user input ─▶ normalize (rules R1–R14) ─▶ buildPanels ─┬─▶ 3D scene
-                                                        ├─▶ price
-                                                        └─▶ cut list / CSV
-```
+- Dimensions with a countertop: thickening, left / right / front extensions.
+- Board type and decor for the carcass, fronts, drawer boxes and drawer bottoms;
+  grain direction and continuous grain across both fronts.
+- Concealed or metal-box runners, soft-close or push-to-open, three drawer
+  lengths, a siphon cut-out of configurable size and position.
+- Plain, milled-grip or edge-handle fronts; single or double handle drilling.
+- 3D view: camera presets, drawers open on click, PNG snapshot with dimensions,
+  fullscreen.
+- Summary with the price of every choice, a cut list and its CSV export, an
+  inquiry form that opens the mail client, sharing by link.
 
-- `src/domain/` — pure TypeScript, no React or Three.js: config schema (Zod),
-  catalogue, rules, panel builder, pricing, cut list. Every rule returns a
-  corrected config plus a list of adjustments; nothing throws.
-- `src/scene/` — React Three Fiber. Renders `Panel[]` from the domain and never
-  invents geometry, so the 3D model and the cut list cannot diverge. Mapping,
-  texture and hardware maths live in pure, tested helpers.
-- `src/state/` — Zustand store; every update goes through `normalize()`; URL and
-  localStorage sync.
-- `src/features/`, `src/ui/` — stepper, price panel, summary; presentational
-  controls.
+## Documentation
 
-The functional spec, rules and assumptions are in [docs/spec.md](docs/spec.md);
-the decision log per milestone is in [docs/progress.md](docs/progress.md).
+| Document                                     | For                                               |
+| -------------------------------------------- | ------------------------------------------------- |
+| [docs/architecture.md](docs/architecture.md) | Layers, data flow, how to extend it               |
+| [docs/spec.md](docs/spec.md)                 | Parameters, rules, panels, pricing                |
+| [docs/progress.md](docs/progress.md)         | Milestones and the decisions behind them          |
+| [docs/ai-workflow.md](docs/ai-workflow.md)   | How the AI agent was planned, checked and limited |
+| [CLAUDE.md](CLAUDE.md)                       | Rules the agent follows in this repository        |
 
 ## Running locally
 
-Requires Node 24 and pnpm 10.
+Requires Node 22+ and pnpm 10.
 
 ```bash
 pnpm install
 pnpm dev            # http://localhost:5173
 ```
 
-| Command          | What it does                                   |
-| ---------------- | ---------------------------------------------- |
-| `pnpm test`      | Unit tests (Vitest) — domain, state, scene     |
-| `pnpm test:e2e`  | Smoke tests (Playwright) on desktop and 375 px |
-| `pnpm typecheck` | TypeScript, strict                             |
-| `pnpm lint`      | oxlint                                         |
-| `pnpm format`    | Prettier                                       |
-| `pnpm build`     | Production build                               |
+| Command              | What it does                                   |
+| -------------------- | ---------------------------------------------- |
+| `pnpm test`          | Unit tests (Vitest)                            |
+| `pnpm test:coverage` | Unit tests with coverage thresholds            |
+| `pnpm test:e2e`      | Smoke tests (Playwright) on desktop and 375 px |
+| `pnpm typecheck`     | TypeScript, strict                             |
+| `pnpm lint`          | oxlint, including the layer boundaries         |
+| `pnpm knip`          | Unused files, exports and dependencies         |
+| `pnpm format`        | Prettier                                       |
+| `pnpm build`         | Production build                               |
 
 The first `pnpm test:e2e` needs a browser: `pnpm exec playwright install chromium`.
 
-## Testing
+## Stack
 
-- Every rule, the panel builder, pricing, cut list, URL encoding and the scene
-  helpers have unit tests next to the code.
-- Invariant tests run the panel builder over a grid of extreme configurations:
-  whole-millimetre sizes, nothing outside the cabinet, no overlapping panels,
-  holes inside their panel.
-- Pricing tests check calibration ranges against the reference shop instead of
-  exact amounts, so tuning a rate does not break them.
-- Playwright covers loading, a price update, the CSV download, the reset
-  confirmation, option prices and hints, inquiry validation, camera views and
-  the mobile layout.
-- CI runs lint, formatting, types, unit tests and the build, plus a separate
-  Playwright job.
+Vite · React 19 · TypeScript (strict) · Three.js with React Three Fiber and drei ·
+Zustand · Zod · Vitest · Playwright · oxlint · Prettier · knip · GitHub Actions ·
+Vercel
 
-## Assumptions
+## Configuration
 
-The option set and price level follow a real made-to-measure vanity
-configurator (fabrykamebli.pl, product LWUNS2); no code, assets or branding
-were taken from it. Construction values that the reference does not show —
-board thickness, gaps, clearances, drawer box sizes, rates — are our own and
-are listed in `src/domain/constants.ts` and `src/domain/pricing.config.ts`.
+- Prices and rates: `src/domain/pricing.config.ts`
+- Construction values (board thickness, gaps, clearances): `src/domain/constants.ts`
+- Decors and boards: `src/domain/catalog.ts`
+- Inquiry e-mail address: `INQUIRY_EMAIL` in `src/features/inquiry/inquiry.ts`

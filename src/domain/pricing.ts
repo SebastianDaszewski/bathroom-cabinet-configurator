@@ -7,7 +7,7 @@ export const PRICE_CATEGORIES = ['boards', 'edging', 'hardware', 'machining', 'l
 
 export type PriceCategory = (typeof PRICE_CATEGORIES)[number]
 
-export type PriceUnit = 'm²' | 'm' | 'szt.'
+type PriceUnit = 'm²' | 'm' | 'szt.'
 
 export interface PriceLine {
   category: PriceCategory

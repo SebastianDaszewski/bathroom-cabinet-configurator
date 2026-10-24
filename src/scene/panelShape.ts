@@ -5,7 +5,7 @@ import { cabinetCentre, panelColor, toMetres, type Vec3Tuple } from './geometry'
 
 export type Point = [number, number]
 
-export interface Hole {
+interface Hole {
   u: number
   v: number
   radius: number

@@ -6,18 +6,18 @@ import type { Point } from './panelShape'
 
 export const METAL_COLOR = '#a3aaad'
 export const GROOVE_COLOR = '#2a2f2e'
-export const METAL_SIDE_COLOR = '#d3d7d8'
+const METAL_SIDE_COLOR = '#d3d7d8'
 export const METAL_SIDE_THICKNESS = 16
 export const HANDLE_OVERHANG = 20
 export const HANDLE_STANDOFF = 30
-export const BAR_RADIUS = 6
-export const POST_RADIUS = 4
-export const GROOVE_HEIGHT = 20
+const BAR_RADIUS = 6
+const POST_RADIUS = 4
+const GROOVE_HEIGHT = 20
 const GROOVE_DEPTH = 1
 export const TRAY_COLOR = '#8f9698'
-export const TRAY_WALL = 2
-export const TRAY_HEIGHT = 60
-export const TRAY_RADIUS = 25
+const TRAY_WALL = 2
+const TRAY_HEIGHT = 60
+const TRAY_RADIUS = 25
 const CORNER_SEGMENTS = 6
 
 export type HardwareItem =
@@ -266,7 +266,7 @@ export function hardwareItems(config: Config, panels: readonly Panel[]): Hardwar
   ]
 }
 
-export const DRAWER_OPEN_RATIO = 0.75
+const DRAWER_OPEN_RATIO = 0.75
 
 export type OpenDrawers = Record<DrawerId, boolean>
 

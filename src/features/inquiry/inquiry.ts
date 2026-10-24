@@ -1,9 +1,9 @@
 import { z } from 'zod'
 import type { SummaryGroup } from '../summary/summary'
 
-export const INQUIRY_EMAIL = 'zamowienia@example.com'
+export const INQUIRY_EMAIL = 's.daszewski@gmail.com'
 
-export const InquirySchema = z.object({
+const InquirySchema = z.object({
   name: z.string().trim().min(2, 'Podaj imię i nazwisko.'),
   email: z.email('Podaj poprawny adres e-mail.'),
   phone: z

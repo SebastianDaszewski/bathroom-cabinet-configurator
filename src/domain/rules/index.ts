@@ -36,11 +36,6 @@ export { compatibleDecors } from './decor'
 export { maxTopExtension, topLength } from './top'
 export { allowedDrawerLengths } from './drawerLength'
 export { frontHeights, hasEdgeHandle } from './fronts'
-export {
-  allowedHandleDrillings,
-  allowedHandleSpacings,
-  handleDrillingBlocker,
-  maxHandleSpacing,
-} from './handles'
+export { allowedHandleDrillings, allowedHandleSpacings, handleDrillingBlocker } from './handles'
 export { maxSiphonCutDepth, maxSiphonCutWidth, siphonCenter, siphonXRange } from './siphon'
-export type { Adjustment, RuleId, RuleResult } from './types'
+export type { Adjustment, RuleResult } from './types'

@@ -17,7 +17,7 @@ export type LimitedField = keyof typeof LIMITS
 
 export const BOARD_TYPES = ['chipboard', 'acrylic', 'mdf', 'perfectsense'] as const
 export const CARCASS_BOARD_TYPES = ['chipboard', 'acrylic', 'mdf'] as const
-export const RUNNER_TYPES = ['tandem', 'blum'] as const
+const RUNNER_TYPES = ['tandem', 'blum'] as const
 export const OPENING_TYPES = ['blumotion', 'tip-on'] as const
 export const DRAWER_LENGTHS = [350, 400, 450] as const
 export const SIPHON_POSITIONS = ['center', 'custom'] as const
