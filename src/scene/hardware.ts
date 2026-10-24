@@ -1,19 +1,22 @@
-import { findRunner } from '../domain/catalog'
-import type { Panel, Vec3 } from '../domain/panels'
+import { findHandleFinish, findRunner } from '../domain/catalog'
+import { edgeProfileSpan, panelHoles, type Panel, type Vec3 } from '../domain/panels'
 import { DRAWER_IDS, type Config, type DrawerId } from '../domain/schema'
 import { cabinetCentre, toMetres, toScene, type Vec3Tuple } from './geometry'
 import type { Point } from './panelShape'
 
-export const METAL_COLOR = '#a3aaad'
-export const GROOVE_COLOR = '#2a2f2e'
 const METAL_SIDE_COLOR = '#d3d7d8'
 export const METAL_SIDE_THICKNESS = 16
 export const HANDLE_OVERHANG = 20
 export const HANDLE_STANDOFF = 30
 const BAR_RADIUS = 6
 const POST_RADIUS = 4
-const GROOVE_HEIGHT = 20
-const GROOVE_DEPTH = 1
+const BOW_RADIUS = 5
+export const BOW_RISE = 34
+const SQUARE_BAR = { height: 10, depth: 8, overhang: 6 }
+const SQUARE_LEG = 10
+const PROFILE_OVERHANG = 10
+const PROFILE_LIP = 18
+const PROFILE_WALL = 1.5
 export const TRAY_COLOR = '#8f9698'
 const TRAY_WALL = 2
 const TRAY_HEIGHT = 60
@@ -44,6 +47,25 @@ export type HardwareItem =
   | {
       id: string
       drawer: DrawerId
+      shape: 'tube'
+      points: [Vec3Tuple, Vec3Tuple, Vec3Tuple]
+      radius: number
+      color: string
+      metal: boolean
+    }
+  | {
+      id: string
+      drawer: DrawerId
+      shape: 'profile'
+      origin: Vec3Tuple
+      section: Point[]
+      length: number
+      color: string
+      metal: boolean
+    }
+  | {
+      id: string
+      drawer: DrawerId
       shape: 'tray'
       position: Vec3Tuple
       floor: Point[]
@@ -62,89 +84,153 @@ function minCorner(panel: Panel): Vec3 {
   }
 }
 
-function barHandles(front: Panel, drawer: DrawerId, centre: Vec3): HardwareItem[] {
+function handlePair(
+  style: Config['handleStyle'],
+  id: string,
+  drawer: DrawerId,
+  left: { x: number; y: number },
+  right: { x: number; y: number },
+  surface: number,
+  color: string,
+  centre: Vec3,
+): HardwareItem[] {
+  const y = left.y
+  const middle = (left.x + right.x) / 2
+  const spacing = right.x - left.x
+
+  if (style === 'bow') {
+    return [
+      {
+        id: `${id}-bow`,
+        drawer,
+        shape: 'tube',
+        points: [
+          toScene({ x: left.x, y, z: surface }, centre),
+          toScene({ x: middle, y, z: surface + 2 * BOW_RISE }, centre),
+          toScene({ x: right.x, y, z: surface }, centre),
+        ],
+        radius: toMetres(BOW_RADIUS),
+        color,
+        metal: true,
+      },
+    ]
+  }
+
+  if (style === 'square') {
+    const legDepth = HANDLE_STANDOFF - SQUARE_BAR.depth
+    return [
+      {
+        id: `${id}-bar`,
+        drawer,
+        shape: 'box',
+        position: toScene(
+          { x: middle, y, z: surface + HANDLE_STANDOFF - SQUARE_BAR.depth / 2 },
+          centre,
+        ),
+        size: [
+          toMetres(spacing + SQUARE_LEG + 2 * SQUARE_BAR.overhang),
+          toMetres(SQUARE_BAR.height),
+          toMetres(SQUARE_BAR.depth),
+        ],
+        color,
+        metal: true,
+      },
+      ...[left, right].map((hole, index): HardwareItem => ({
+        id: `${id}-leg-${index === 0 ? 'left' : 'right'}`,
+        drawer,
+        shape: 'box',
+        position: toScene({ x: hole.x, y, z: surface + legDepth / 2 }, centre),
+        size: [toMetres(SQUARE_LEG), toMetres(SQUARE_LEG), toMetres(legDepth)],
+        color,
+        metal: true,
+      })),
+    ]
+  }
+
+  return [
+    {
+      id: `${id}-bar`,
+      drawer,
+      shape: 'cylinder',
+      position: toScene({ x: middle, y, z: surface + HANDLE_STANDOFF }, centre),
+      radius: toMetres(BAR_RADIUS),
+      length: toMetres(spacing + 2 * HANDLE_OVERHANG),
+      axis: 'x',
+      color,
+      metal: true,
+    },
+    ...[left, right].map((hole, index): HardwareItem => ({
+      id: `${id}-post-${index === 0 ? 'left' : 'right'}`,
+      drawer,
+      shape: 'cylinder',
+      position: toScene({ x: hole.x, y, z: surface + HANDLE_STANDOFF / 2 }, centre),
+      radius: toMetres(POST_RADIUS),
+      length: toMetres(HANDLE_STANDOFF),
+      axis: 'z',
+      color,
+      metal: true,
+    })),
+  ]
+}
+
+function drilledHandles(
+  config: Config,
+  front: Panel,
+  drawer: DrawerId,
+  centre: Vec3,
+): HardwareItem[] {
   const min = minCorner(front)
   const surface = min.z + front.thickness
-  const holes = [...front.cutouts].sort((a, b) => a.u - b.u)
+  const color = findHandleFinish(config.handleFinish).color
+  const holes = panelHoles(front).sort((a, b) => a.u - b.u)
 
   const items: HardwareItem[] = []
   for (let index = 0; index + 1 < holes.length; index += 2) {
     const [left, right] = [holes[index], holes[index + 1]]
-    const y = min.y + left.v
-    const id = `${front.id}-handle-${index / 2}`
-
-    items.push({
-      id: `${id}-bar`,
-      drawer,
-      shape: 'cylinder',
-      position: toScene(
-        { x: min.x + (left.u + right.u) / 2, y, z: surface + HANDLE_STANDOFF },
+    items.push(
+      ...handlePair(
+        config.handleStyle,
+        `${front.id}-handle-${index / 2}`,
+        drawer,
+        { x: min.x + left.u, y: min.y + left.v },
+        { x: min.x + right.u, y: min.y + right.v },
+        surface,
+        color,
         centre,
       ),
-      radius: toMetres(BAR_RADIUS),
-      length: toMetres(right.u - left.u + 2 * HANDLE_OVERHANG),
-      axis: 'x',
-      color: METAL_COLOR,
-      metal: true,
-    })
-    for (const [side, hole] of [
-      ['left', left],
-      ['right', right],
-    ] as const) {
-      items.push({
-        id: `${id}-post-${side}`,
-        drawer,
-        shape: 'cylinder',
-        position: toScene({ x: min.x + hole.u, y, z: surface + HANDLE_STANDOFF / 2 }, centre),
-        radius: toMetres(POST_RADIUS),
-        length: toMetres(HANDLE_STANDOFF),
-        axis: 'z',
-        color: METAL_COLOR,
-        metal: true,
-      })
-    }
+    )
   }
   return items
 }
 
+export function edgeProfileSection(thickness: number, frontThickness: number): Point[] {
+  const front = frontThickness + PROFILE_OVERHANG
+  const lipBottom = thickness - PROFILE_LIP
+  return [
+    [0, 0],
+    [front - PROFILE_WALL, 0],
+    [front - PROFILE_WALL, lipBottom],
+    [front, lipBottom],
+    [front, thickness],
+    [0, thickness],
+  ]
+}
+
 function edgeProfile(front: Panel, drawer: DrawerId, config: Config, centre: Vec3): HardwareItem {
   const min = minCorner(front)
-  const thickness = config.edgeHandleThickness
+  const span = edgeProfileSpan(config, front)
   return {
     id: `${front.id}-profile`,
     drawer,
-    shape: 'box',
-    position: toScene(
-      {
-        x: front.position.x,
-        y: min.y + front.width + thickness / 2,
-        z: front.position.z,
-      },
-      centre,
-    ),
-    size: [toMetres(front.length), toMetres(thickness), toMetres(front.thickness)],
-    color: METAL_COLOR,
+    shape: 'profile',
+    origin: toScene({ x: min.x + span.start, y: min.y + front.width, z: min.z }, centre),
+    section: edgeProfileSection(config.edgeHandleThickness, front.thickness).map(([t, v]) => [
+      toMetres(t),
+      toMetres(v),
+    ]),
+    length: toMetres(span.length),
+    color: findHandleFinish(config.handleFinish).color,
     metal: true,
-  }
-}
-
-function gripGroove(front: Panel, drawer: DrawerId, centre: Vec3): HardwareItem {
-  const min = minCorner(front)
-  return {
-    id: `${front.id}-groove`,
-    drawer,
-    shape: 'box',
-    position: toScene(
-      {
-        x: front.position.x,
-        y: min.y + front.width - GROOVE_HEIGHT / 2,
-        z: min.z + front.thickness + GROOVE_DEPTH / 2,
-      },
-      centre,
-    ),
-    size: [toMetres(front.length), toMetres(GROOVE_HEIGHT), toMetres(GROOVE_DEPTH)],
-    color: GROOVE_COLOR,
-    metal: false,
   }
 }
 
@@ -188,8 +274,7 @@ function frontHardware(config: Config, panels: readonly Panel[], centre: Vec3): 
       const drawer = front.drawer
       if (!drawer) return []
       if (config.frontType === 'edge-handle') return [edgeProfile(front, drawer, config, centre)]
-      if (config.frontType === 'grip-groove') return [gripGroove(front, drawer, centre)]
-      return barHandles(front, drawer, centre)
+      return drilledHandles(config, front, drawer, centre)
     })
 }
 

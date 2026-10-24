@@ -47,6 +47,11 @@ describe('R1 clampDimensions', () => {
     expect(clampDimensions({ ...DEFAULT_CONFIG, width }).adjustments).toEqual([])
   })
 
+  it('keeps the grip height between 25 and 60 mm', () => {
+    expect(clampDimensions({ ...DEFAULT_CONFIG, gripHeight: 10 }).config.gripHeight).toBe(25)
+    expect(clampDimensions({ ...DEFAULT_CONFIG, gripHeight: 90 }).config.gripHeight).toBe(60)
+  })
+
   it('rounds non-integer input', () => {
     const result = clampDimensions({ ...DEFAULT_CONFIG, width: 700.6, height: 450.4 })
     expect(result.config.width).toBe(701)

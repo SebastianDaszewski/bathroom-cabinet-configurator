@@ -30,7 +30,7 @@ The UI is in Polish (the target market); code and documentation are in English.
 - **Real geometry.** Holes and cut-outs are cut into the panels, drawers open,
   textures follow the grain direction of each board, and the scene renders only
   when something changes.
-- **Tested like a library.** 387 unit tests (100 % line coverage of the domain),
+- **Tested like a library.** 404 unit tests (100 % line coverage of the domain),
   invariant tests over extreme configurations, and Playwright smoke tests on
   desktop and mobile — all in CI with lint, types and an unused-code check.
 
@@ -41,7 +41,8 @@ The UI is in Polish (the target market); code and documentation are in English.
   grain direction and continuous grain across both fronts.
 - Concealed or metal-box runners, soft-close or push-to-open, three drawer
   lengths, a siphon cut-out of configurable size and position.
-- Plain, milled-grip or edge-handle fronts; single or double handle drilling.
+- Plain, milled-grip or edge-handle fronts; single or double handle drilling;
+  three handle styles and three finishes.
 - 3D view: camera presets, drawers open on click, PNG snapshot with dimensions,
   fullscreen.
 - Summary with the price of every choice, a cut list and its CSV export, an

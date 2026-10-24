@@ -61,6 +61,17 @@ describe('toCutList', () => {
     expect(front?.notes).toBe('Otwory Ø5: 2 szt.')
   })
 
+  it('lists the grip milling of grip-groove fronts', () => {
+    const front = toCutList(buildPanels({ ...DEFAULT_CONFIG, frontType: 'grip-groove' })).find(
+      (row) => row.name === 'Front szuflady',
+    )
+    expect(front?.notes).toBe('Frezowanie uchwytu w licu 35×12')
+    const higher = toCutList(
+      buildPanels({ ...DEFAULT_CONFIG, frontType: 'grip-groove', gripHeight: 50 }),
+    ).find((row) => row.name === 'Front szuflady')
+    expect(higher?.notes).toBe('Frezowanie uchwytu w licu 50×12')
+  })
+
   it('states the grain direction of wood decors only', () => {
     const vertical = toCutList(buildPanels({ ...DEFAULT_CONFIG, frontGrain: 'vertical' }))
     const front = (list: CutListRow[]) => list.find((row) => row.name === 'Front szuflady')

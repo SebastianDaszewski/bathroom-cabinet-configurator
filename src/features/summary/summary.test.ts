@@ -55,10 +55,17 @@ describe('summaryGroups', () => {
   it('describes fronts and handles', () => {
     expect(value(config(), 'Fronty i uchwyty', 'Uchwyty')).toBe('Bez uchwytów')
     expect(value(config({ handleDrilling: 'single' }), 'Fronty i uchwyty', 'Uchwyty')).toBe(
-      'Jeden uchwyt, rozstaw 128 mm, na środku',
+      'Jeden uchwyt (reling, stal szczotkowana), rozstaw 128 mm, na środku',
     )
     expect(value(config({ frontType: 'edge-handle' }), 'Fronty i uchwyty', 'Front')).toBe(
-      'Uchwyt krawędziowy, profil 2 mm',
+      'Uchwyt krawędziowy, profil 2 mm, cała szerokość, stal szczotkowana',
+    )
+    expect(
+      value(config({ frontType: 'grip-groove', gripHeight: 45 }), 'Fronty i uchwyty', 'Front'),
+    ).toBe('Frezowany uchwyt, wysokość frezu 45 mm')
+    const styled = config({ handleDrilling: 'single', handleStyle: 'bow', handleFinish: 'gold' })
+    expect(value(styled, 'Fronty i uchwyty', 'Uchwyty')).toBe(
+      'Jeden uchwyt (łukowy, złoty szczotkowany), rozstaw 128 mm, na środku',
     )
   })
 })

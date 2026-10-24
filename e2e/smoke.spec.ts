@@ -12,6 +12,7 @@ test('renders the configurator with a 3D view and a price', async ({ page }) => 
 })
 
 test('a wider cabinet costs more and is kept in the link', async ({ page }) => {
+  await expect(page.getByRole('button', { name: 'Zapisz zdjęcie' })).toBeEnabled()
   const price = page.locator('.price-amount')
   const before = await price.textContent()
 
@@ -58,6 +59,22 @@ test('shows what each option adds to the price', async ({ page }) => {
 
   await page.getByRole('button', { name: 'Co oznaczają opcje: Otwieranie' }).click()
   await expect(page.getByText('Szuflada domyka się sama')).toBeVisible()
+})
+
+test('lets the customer pick the handle style and finish', async ({ page }) => {
+  await page.getByRole('tab', { name: /Fronty/ }).click()
+  await page.locator('.segment', { hasText: 'Jeden uchwyt' }).click()
+
+  const price = page.locator('.price-amount')
+  const before = await price.textContent()
+  const gold = page.locator('.segment', { hasText: 'Złoty szczotkowany' })
+  await expect(gold.locator('.segment-note')).toHaveText(/^\+\d/)
+
+  await page.locator('.segment', { hasText: 'Łukowy' }).click()
+  await gold.click()
+  await expect(price).not.toHaveText(before ?? '')
+  await expect(page).toHaveURL(/handleStyle=bow/)
+  await expect(page).toHaveURL(/handleFinish=gold/)
 })
 
 test('validates the inquiry before opening the mail client', async ({ page }) => {

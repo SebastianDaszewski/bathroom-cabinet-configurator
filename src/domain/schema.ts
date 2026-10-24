@@ -5,6 +5,7 @@ export const LIMITS = {
   height: { min: 400, max: 600, step: 1 },
   depth: { min: 390, max: 700, step: 1 },
   edgeHandleThickness: { min: 1, max: 4, step: 1 },
+  gripHeight: { min: 25, max: 60, step: 1 },
   handleSpacing: { min: 32, max: 480, step: 32 },
   siphonCutWidth: { min: 120, max: 300, step: 1 },
   siphonCutDepth: { min: 150, max: 350, step: 1 },
@@ -24,8 +25,11 @@ export const SIPHON_POSITIONS = ['center', 'custom'] as const
 export const FRONT_TYPES = ['standard', 'grip-groove', 'edge-handle', 'edge-handle-ready'] as const
 export const SIDE_GRAINS = ['vertical', 'horizontal'] as const
 export const FRONT_GRAINS = ['horizontal', 'vertical'] as const
+export const EDGE_HANDLE_LENGTHS = ['full', '450', '300', '150'] as const
 export const HANDLE_DRILLINGS = ['none', 'single', 'double'] as const
 export const HANDLE_POSITIONS = ['top-50', 'center'] as const
+const HANDLE_STYLES = ['bar', 'bow', 'square'] as const
+const HANDLE_FINISHES = ['steel', 'black', 'gold'] as const
 export const DRAWER_IDS = ['top', 'bottom'] as const
 export const TOP_THICKENINGS = ['none', 'double'] as const
 
@@ -33,6 +37,8 @@ export type BoardType = (typeof BOARD_TYPES)[number]
 export type RunnerType = (typeof RUNNER_TYPES)[number]
 export type DrawerLength = (typeof DRAWER_LENGTHS)[number]
 export type DrawerId = (typeof DRAWER_IDS)[number]
+export type HandleStyle = (typeof HANDLE_STYLES)[number]
+export type HandleFinish = (typeof HANDLE_FINISHES)[number]
 
 const DrawerSchema = z.object({
   length: z.literal(DRAWER_LENGTHS),
@@ -67,10 +73,14 @@ export const ConfigSchema = z.object({
   continuousGrain: z.boolean(),
   frontType: z.enum(FRONT_TYPES),
   edgeHandleThickness: z.number(),
+  edgeHandleLength: z.enum(EDGE_HANDLE_LENGTHS),
+  gripHeight: z.number(),
 
   handleDrilling: z.enum(HANDLE_DRILLINGS),
   handleSpacing: z.number(),
   handlePosition: z.enum(HANDLE_POSITIONS),
+  handleStyle: z.enum(HANDLE_STYLES),
+  handleFinish: z.enum(HANDLE_FINISHES),
 })
 
 export type Config = z.infer<typeof ConfigSchema>
@@ -107,10 +117,14 @@ export const DEFAULT_CONFIG: Config = {
   continuousGrain: false,
   frontType: 'standard',
   edgeHandleThickness: 2,
+  edgeHandleLength: 'full',
+  gripHeight: 35,
 
   handleDrilling: 'none',
   handleSpacing: 128,
   handlePosition: 'center',
+  handleStyle: 'bar',
+  handleFinish: 'steel',
 }
 
 export function parseConfig(input: unknown): Config {

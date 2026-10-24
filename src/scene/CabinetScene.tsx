@@ -70,6 +70,12 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
   const guides = useMemo(() => dimensionGuides(config), [config])
   const offsets = drawerOffsets(config, open)
   const distance = cameraDistance(config)
+  const [initialCamera] = useState(() => ({
+    position: cameraPosition(distance),
+    fov: CAMERA_FOV,
+    near: 0.01,
+    far: 50,
+  }))
   const labels = useRef(new Map<string, HTMLElement>())
 
   const registerSnapshot = useCallback((next: Snapshot | null) => {
@@ -114,11 +120,7 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
 
   return (
     <div className="scene" ref={container}>
-      <Canvas
-        frameloop="demand"
-        dpr={[1, 2]}
-        camera={{ position: cameraPosition(distance), fov: CAMERA_FOV, near: 0.01, far: 50 }}
-      >
+      <Canvas frameloop="demand" dpr={[1, 2]} camera={initialCamera}>
         <StudioLighting
           floor={cabinetFloor(config)}
           span={cabinetSpan(config)}

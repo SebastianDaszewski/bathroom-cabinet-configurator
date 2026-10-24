@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { buildPanels, cabinetBounds, type Panel } from './panels'
+import {
+  buildPanels,
+  cabinetBounds,
+  edgeProfileSpan,
+  panelGrip,
+  panelHoles,
+  type Panel,
+} from './panels'
 import { normalize } from './rules'
 import { DEFAULT_CONFIG, type Config } from './schema'
 
@@ -273,8 +280,38 @@ describe('buildPanels — fronts and handles', () => {
       buildPanels(config({ width: 1000, handleDrilling: 'double', handlePosition: 'top-50' })),
       'front-bottom',
     )
-    expect(front.cutouts.map((cutout) => cutout.u)).toEqual([185, 313, 683, 811])
-    expect(front.cutouts.every((cutout) => cutout.v === 198)).toBe(true)
+    expect(panelHoles(front).map((hole) => hole.u)).toEqual([185, 313, 683, 811])
+    expect(panelHoles(front).every((hole) => hole.v === 198)).toBe(true)
+  })
+
+  it('takes the grip height from the config', () => {
+    const front = byId(
+      buildPanels(config({ frontType: 'grip-groove', gripHeight: 50 })),
+      'front-top',
+    )
+    expect(panelGrip(front)?.height).toBe(50)
+  })
+
+  it('centres a shorter edge profile on the front', () => {
+    const front = byId(buildPanels(DEFAULT_CONFIG), 'front-top')
+    expect(edgeProfileSpan(DEFAULT_CONFIG, front)).toEqual({ start: 0, length: front.length })
+    expect(edgeProfileSpan(config({ edgeHandleLength: '300' }), front)).toEqual({
+      start: (front.length - 300) / 2,
+      length: 300,
+    })
+  })
+
+  it('mills a grip into the face along the top edge of grip-groove fronts', () => {
+    const panels = buildPanels(config({ frontType: 'grip-groove' }))
+    expect(panelGrip(byId(panels, 'front-top'))).toEqual({
+      kind: 'grip',
+      height: 35,
+      depth: 12,
+      pocketWidth: 8,
+      pocketDepth: 10,
+    })
+    expect(panelGrip(byId(panels, 'front-bottom'))).toBeDefined()
+    expect(panelGrip(byId(buildPanels(DEFAULT_CONFIG), 'front-top'))).toBeUndefined()
   })
 })
 
@@ -332,7 +369,7 @@ describe('buildPanels — invariants', () => {
           expect(min.y + panel.size.y).toBeLessThanOrEqual(input.height)
         }
 
-        for (const hole of panel.cutouts) {
+        for (const hole of panelHoles(panel)) {
           expect(hole.u).toBeGreaterThanOrEqual(50)
           expect(hole.u).toBeLessThanOrEqual(panel.length - 50)
           expect(hole.v).toBeGreaterThan(0)

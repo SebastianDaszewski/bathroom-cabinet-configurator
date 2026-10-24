@@ -7,6 +7,9 @@ import {
   DRAWER_BOX_LIFT,
   FRONT_EDGE_GAP,
   FRONT_GAP,
+  GRIP_DEPTH,
+  GRIP_POCKET_DEPTH,
+  GRIP_POCKET_WIDTH,
   HANDLE_HOLE_DIAMETER,
   HANDLE_TOP_OFFSET,
   TOP_FRONT_OVERHANG,
@@ -31,11 +34,37 @@ export interface Edges {
   w2: boolean
 }
 
-interface Cutout {
+export interface Hole {
   kind: 'hole'
   u: number
   v: number
   diameter: number
+}
+
+export interface Grip {
+  kind: 'grip'
+  height: number
+  depth: number
+  pocketWidth: number
+  pocketDepth: number
+}
+
+type Cutout = Hole | Grip
+
+export function panelHoles(panel: Panel): Hole[] {
+  return panel.cutouts.filter((cutout): cutout is Hole => cutout.kind === 'hole')
+}
+
+export function panelGrip(panel: Panel): Grip | undefined {
+  return panel.cutouts.find((cutout): cutout is Grip => cutout.kind === 'grip')
+}
+
+export function edgeProfileSpan(config: Config, front: Panel): { start: number; length: number } {
+  const length =
+    config.edgeHandleLength === 'full'
+      ? front.length
+      : Math.min(Number(config.edgeHandleLength), front.length)
+  return { start: (front.length - length) / 2, length }
 }
 
 export type GrainDirection = 'length' | 'width'
@@ -228,7 +257,7 @@ function handleHoles(config: Config, frontLength: number, frontHeight: number): 
   const half = config.handleSpacing / 2
 
   return centers.flatMap((center) =>
-    [center - half, center + half].map((u): Cutout => ({
+    [center - half, center + half].map((u): Hole => ({
       kind: 'hole',
       u,
       v,
@@ -256,7 +285,20 @@ function frontPanels(config: Config): Panel[] {
       axes: ['x', 'y', 'z'],
       min: { x: FRONT_EDGE_GAP, y: bottoms[id], z: config.depth },
       edges: ALL_EDGES,
-      cutouts: handleHoles(config, length, heights[id]),
+      cutouts: [
+        ...handleHoles(config, length, heights[id]),
+        ...(config.frontType === 'grip-groove'
+          ? [
+              {
+                kind: 'grip',
+                height: config.gripHeight,
+                depth: GRIP_DEPTH,
+                pocketWidth: GRIP_POCKET_WIDTH,
+                pocketDepth: GRIP_POCKET_DEPTH,
+              } as const,
+            ]
+          : []),
+      ],
       grain: config.frontGrain === 'horizontal' ? 'length' : 'width',
       continuousGrain: config.continuousGrain,
     }),
