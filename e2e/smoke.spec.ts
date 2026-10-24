@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 
 test.beforeEach(async ({ page }) => {
@@ -77,14 +77,47 @@ test('lets the customer pick the handle style and finish', async ({ page }) => {
   await expect(page).toHaveURL(/handleFinish=gold/)
 })
 
-test('validates the inquiry before opening the mail client', async ({ page }) => {
+async function openInquiry(page: Page) {
   await page.getByRole('tab', { name: /Podsumowanie/ }).click()
   await page.getByRole('button', { name: 'Wyślij zapytanie' }).click()
-  const dialog = page.getByRole('dialog', { name: 'Wyślij zapytanie' })
-  await dialog.getByRole('button', { name: 'Przygotuj wiadomość' }).click()
+  return page.getByRole('dialog', { name: 'Wyślij zapytanie' })
+}
+
+async function fillInquiry(dialog: Locator) {
+  await dialog.getByLabel('Imię i nazwisko').fill('Anna Nowak')
+  await dialog.getByLabel('Adres e-mail').fill('anna@example.com')
+  await dialog.getByRole('button', { name: 'Wyślij zapytanie' }).click()
+}
+
+test('validates the inquiry before sending it', async ({ page }) => {
+  const dialog = await openInquiry(page)
+  await dialog.getByRole('button', { name: 'Wyślij zapytanie' }).click()
 
   await expect(dialog.getByText('Podaj imię i nazwisko.')).toBeVisible()
   await expect(dialog.getByText('Podaj poprawny adres e-mail.')).toBeVisible()
+})
+
+test('sends the inquiry with the configuration', async ({ page }) => {
+  let sent: { inquiry: { name: string }; link: string } | undefined
+  await page.route('**/api/inquiry', async (route) => {
+    sent = route.request().postDataJSON()
+    await route.fulfill({ json: { ok: true } })
+  })
+
+  await fillInquiry(await openInquiry(page))
+
+  await expect(page.getByRole('dialog', { name: 'Zapytanie wysłane' })).toBeVisible()
+  expect(sent?.inquiry.name).toBe('Anna Nowak')
+  expect(sent?.link).toMatch(/^http/)
+})
+
+test('offers the mail client when sending fails', async ({ page }) => {
+  await page.route('**/api/inquiry', (route) => route.fulfill({ status: 502, json: {} }))
+  const dialog = await openInquiry(page)
+  await fillInquiry(dialog)
+
+  await expect(dialog.getByRole('alert')).toContainText('Nie udało się wysłać zapytania')
+  await expect(dialog.getByRole('button', { name: 'Otwórz w programie pocztowym' })).toBeVisible()
 })
 
 test('switches camera views', async ({ page }) => {

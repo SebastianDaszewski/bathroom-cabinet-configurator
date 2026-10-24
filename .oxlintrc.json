@@ -3,7 +3,12 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
   },
   "overrides": [
     {
@@ -36,6 +41,33 @@
               {
                 "group": ["**/state/**", "**/features/**", "zustand", "zustand/*"],
                 "message": "src/scene renders what it receives as props; it does not read the store or the UI."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": ["src/server/**", "api/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["react", "react-dom", "three", "@react-three/*", "zustand", "zustand/*"],
+                "message": "Server code runs in a Vercel function: no UI, 3D or state libraries."
+              },
+              {
+                "group": [
+                  "**/state/**",
+                  "**/scene/**",
+                  "**/ui/**",
+                  "**/domain/**",
+                  "**/summary/**",
+                  "**/stepper/**"
+                ],
+                "message": "Server code may only use the self-contained inquiry module."
               }
             ]
           }

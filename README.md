@@ -30,7 +30,7 @@ The UI is in Polish (the target market); code and documentation are in English.
 - **Real geometry.** Holes and cut-outs are cut into the panels, drawers open,
   textures follow the grain direction of each board, and the scene renders only
   when something changes.
-- **Tested like a library.** 404 unit tests (100 % line coverage of the domain),
+- **Tested like a library.** 412 unit tests (100 % line coverage of the domain),
   invariant tests over extreme configurations, and Playwright smoke tests on
   desktop and mobile — all in CI with lint, types and an unused-code check.
 
@@ -46,7 +46,7 @@ The UI is in Polish (the target market); code and documentation are in English.
 - 3D view: camera presets, drawers open on click, PNG snapshot with dimensions,
   fullscreen.
 - Summary with the price of every choice, a cut list and its CSV export, an
-  inquiry form that opens the mail client, sharing by link.
+  inquiry form that e-mails the configuration to the shop, sharing by link.
 
 ## Documentation
 
@@ -91,3 +91,7 @@ Vercel
 - Construction values (board thickness, gaps, clearances): `src/domain/constants.ts`
 - Decors and boards: `src/domain/catalog.ts`
 - Inquiry e-mail address: `INQUIRY_EMAIL` in `src/features/inquiry/inquiry.ts`
+- Inquiry sending: `RESEND_API_KEY` environment variable on Vercel (a
+  [Resend](https://resend.com) key). Without it the form offers the mail client
+  instead. `pnpm dev` does not run the function; use `vercel dev` to try it
+  locally.

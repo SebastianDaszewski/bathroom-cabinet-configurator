@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { DEFAULT_CONFIG } from '../../domain/schema'
 import { summaryGroups } from '../summary/summary'
-import { INQUIRY_EMAIL, inquiryMailto, validateInquiry, type Inquiry } from './inquiry'
+import { INQUIRY_EMAIL, inquiryMailto, sendInquiry, validateInquiry, type Inquiry } from './inquiry'
 
 const valid: Inquiry = {
   name: 'Anna Nowak',
@@ -68,5 +68,34 @@ describe('inquiryMailto', () => {
       link: 'https://example.test/',
     })
     expect(decodeURIComponent(withoutPhone)).not.toContain('Telefon:')
+  })
+})
+
+describe('sendInquiry', () => {
+  const payload = {
+    inquiry: valid,
+    title: 't',
+    groups: [],
+    price: '1 zł',
+    link: 'https://example.test/',
+    website: '',
+  }
+
+  it('posts the inquiry as JSON to the inquiry endpoint', async () => {
+    const post = vi.fn<typeof fetch>(async () => new Response('{}', { status: 200 }))
+    expect(await sendInquiry(payload, post)).toBe(true)
+    const [url, init] = post.mock.calls[0]
+    expect(url).toBe('/api/inquiry')
+    expect(init?.method).toBe('POST')
+    expect(JSON.parse(String(init?.body))).toEqual(payload)
+  })
+
+  it('reports a failure on an error status or a network error', async () => {
+    expect(await sendInquiry(payload, async () => new Response('{}', { status: 502 }))).toBe(false)
+    expect(
+      await sendInquiry(payload, async () => {
+        throw new TypeError('offline')
+      }),
+    ).toBe(false)
   })
 })
