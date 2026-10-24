@@ -26,9 +26,9 @@ page shows how the agent was kept under control.
 3. **Check.** Lint, types, `knip`, unit tests with coverage, e2e when the UI
    changed — and a look at the running app (browser, Playwright screenshots on
    desktop and 375 px).
-4. **Document.** Decisions go to [`progress.md`](progress.md), rules and data
-   to [`spec.md`](spec.md), so the next session starts from the docs, not from
-   memory.
+4. **Document.** Rules and data go to [`spec.md`](spec.md), structure to
+   [`architecture.md`](architecture.md), the reasoning to the PR description,
+   so the next session starts from the docs, not from memory.
 5. **Review and commit — by me.** I read the diff, commit, open the PR, wait
    for CI and merge. One milestone per PR.
 

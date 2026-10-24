@@ -1,9 +1,9 @@
 # CLAUDE.md
 
 Parametric 3D bathroom vanity configurator. At the start of every session read
-`docs/spec.md` (functional spec), `docs/architecture.md` (modules and how to
-extend them) and `docs/progress.md` (status and decisions). Keep them in sync
-with the code; record every milestone and decision in `progress.md`.
+`docs/spec.md` (functional spec) and `docs/architecture.md` (modules and how to
+extend them). Keep both in sync with the code; put the reasoning behind each
+change in the PR description.
 
 ## Workflow
 
