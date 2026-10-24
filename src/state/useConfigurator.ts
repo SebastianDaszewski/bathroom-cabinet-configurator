@@ -15,7 +15,7 @@ function browserStorage() {
   }
 }
 
-export const configuratorStore = createConfiguratorStore(
+const configuratorStore = createConfiguratorStore(
   loadInitialConfig(window.location.search, browserStorage()),
 )
 

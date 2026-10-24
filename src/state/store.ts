@@ -24,5 +24,3 @@ export function createConfiguratorStore(initial: RuleResult = normalize(DEFAULT_
     reset: () => set(normalize(DEFAULT_CONFIG)),
   }))
 }
-
-export type ConfiguratorStore = ReturnType<typeof createConfiguratorStore>

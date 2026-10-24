@@ -779,6 +779,11 @@ button {
   cursor: pointer;
 }
 
+.scene-button:disabled {
+  color: var(--line-strong);
+  cursor: progress;
+}
+
 .scene-button:hover {
   border-color: var(--glaze);
 }

@@ -30,7 +30,7 @@ export function valueNoise(x: number, y: number, seed = 0, periodX = 256, period
   return a + (b - a) * tx + (c - a) * ty + (a - b - c + d) * tx * ty
 }
 
-export function tiledNoise(x: number, y: number, cellX: number, cellY: number, seed = 0): number {
+function tiledNoise(x: number, y: number, cellX: number, cellY: number, seed = 0): number {
   return valueNoise(x / cellX, y / cellY, seed, NOISE_PERIOD_MM / cellX, NOISE_PERIOD_MM / cellY)
 }
 

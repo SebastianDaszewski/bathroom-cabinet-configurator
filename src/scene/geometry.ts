@@ -13,10 +13,10 @@ export interface DimensionGuide {
   labelPosition: Vec3Tuple
 }
 
-export const FALLBACK_COLOR = '#d6d3d1'
-export const GUIDE_OFFSET = 60
+const FALLBACK_COLOR = '#d6d3d1'
+const GUIDE_OFFSET = 60
 export const CAMERA_FOV = 40
-export const CAMERA_DIRECTION: Vec3Tuple = [1, 0.6, 1.4]
+const CAMERA_DIRECTION: Vec3Tuple = [1, 0.6, 1.4]
 const CAMERA_PADDING = 1.25
 
 export function toMetres(mm: number): number {

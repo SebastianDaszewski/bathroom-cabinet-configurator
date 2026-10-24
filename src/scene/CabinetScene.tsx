@@ -63,6 +63,7 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
   const [fullscreen, setFullscreen] = useState(false)
   const container = useRef<HTMLDivElement>(null)
   const snapshot = useRef<Snapshot | null>(null)
+  const [snapshotReady, setSnapshotReady] = useState(false)
   const anyOpen = DRAWER_IDS.some((id) => open[id])
   const meshes = useMemo(() => panelMeshes(config, panels), [config, panels])
   const hardware = useMemo(() => hardwareItems(config, panels), [config, panels])
@@ -73,6 +74,7 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
 
   const registerSnapshot = useCallback((next: Snapshot | null) => {
     snapshot.current = next
+    setSnapshotReady(next !== null)
   }, [])
 
   useEffect(() => {
@@ -169,7 +171,12 @@ export default function CabinetScene({ config, panels }: CabinetSceneProps) {
       </div>
 
       <div className="scene-tools">
-        <button type="button" className="scene-button" onClick={savePicture}>
+        <button
+          type="button"
+          className="scene-button"
+          disabled={!snapshotReady}
+          onClick={savePicture}
+        >
           Zapisz zdjęcie
         </button>
         <button

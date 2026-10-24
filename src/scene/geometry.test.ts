@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { DEFAULT_CONFIG } from '../domain/schema'
 import {
   cabinetCentre,
+  cabinetFloor,
+  cabinetSpan,
   cameraDistance,
   cameraPosition,
   dimensionGuides,
@@ -103,5 +105,16 @@ describe('ndcToScreen', () => {
 
   it('hides points outside the clipping range', () => {
     expect(ndcToScreen({ x: 0, y: 0, z: 1.2 }, size).visible).toBe(false)
+  })
+})
+
+describe('cabinet extent', () => {
+  it('puts the floor at the bottom of the carcass', () => {
+    expect(cabinetFloor(DEFAULT_CONFIG)).toBeCloseTo(-0.259)
+  })
+
+  it('spans the wider of width and depth, including the countertop', () => {
+    expect(cabinetSpan(DEFAULT_CONFIG)).toBeCloseTo(0.6)
+    expect(cabinetSpan({ ...DEFAULT_CONFIG, topExtensionRight: 400 })).toBeCloseTo(1)
   })
 })

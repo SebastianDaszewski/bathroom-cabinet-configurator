@@ -5,10 +5,6 @@ A web configurator for a made-to-measure, wall-hung bathroom vanity cabinet
 drawers, fronts and handles, sees a live 3D model with dimensions, gets a price
 with a breakdown, and can export a production cut list.
 
-Reference analysed: fabrykamebli.pl product LWUNS2 (built on the commercial
-Variantic SaaS player). We reproduce the **behaviour and rules**, not the code,
-assets or branding.
-
 ---
 
 ## 1. Scope
@@ -58,18 +54,18 @@ All lengths in millimetres (integers).
 
 ### 2.2 Drawers (exactly 2: `top`, `bottom`)
 
-| Param                 | Type     | Values                                    | Default                       |
-| --------------------- | -------- | ----------------------------------------- | ----------------------------- |
-| `runner`              | enum     | `tandem`, `blum`                          | `blum`                        |
-| `opening`             | enum     | `blumotion` (soft close), `tip-on` (push) | `blumotion`                   |
-| `drawer[i].length`    | enum     | 350, 400, 450                             | max allowed                   |
-| `drawer[i].siphonCut` | bool     | —                                         | `false` (as in the reference) |
-| `siphonPosition`      | enum     | `center`, `custom`                        | `center`                      |
-| `siphonCutWidth`      | int      | 120–300 (R8)                              | 164                           |
-| `siphonCutDepth`      | int      | 150–350, from the drawer back (R13)       | 270                           |
-| `siphonX`             | int      | cut-out centre from the left side (R11)   | 300                           |
-| `drawerDecor`         | decor id |                                           | `white-w960`                  |
-| `drawerBottomDecor`   | decor id | chipboard decors                          | `white-w962`                  |
+| Param                 | Type     | Values                                    | Default      |
+| --------------------- | -------- | ----------------------------------------- | ------------ |
+| `runner`              | enum     | `tandem`, `blum`                          | `blum`       |
+| `opening`             | enum     | `blumotion` (soft close), `tip-on` (push) | `blumotion`  |
+| `drawer[i].length`    | enum     | 350, 400, 450                             | max allowed  |
+| `drawer[i].siphonCut` | bool     | —                                         | `false`      |
+| `siphonPosition`      | enum     | `center`, `custom`                        | `center`     |
+| `siphonCutWidth`      | int      | 120–300 (R8)                              | 164          |
+| `siphonCutDepth`      | int      | 150–350, from the drawer back (R13)       | 270          |
+| `siphonX`             | int      | cut-out centre from the left side (R11)   | 300          |
+| `drawerDecor`         | decor id |                                           | `white-w960` |
+| `drawerBottomDecor`   | decor id | chipboard decors                          | `white-w962` |
 
 ### 2.3 Fronts
 
@@ -111,20 +107,18 @@ Each rule lives in `domain/rules/` as a pure function and has unit tests.
 | R5  | `edge-handle` and `edge-handle-ready`: each front height is reduced by `edgeHandleThickness`.                                                                                                                       |
 | R6  | `handleSpacing` must be `<= width - 2*60` (handle fits on the front with margin); with `double` drilling each handle gets half the front: `<= width/2 - 2*60`. Options above the limit are disabled.                |
 | R7  | `double` handle drilling requires `width >= 800`.                                                                                                                                                                   |
-| R8  | `siphonCutWidth` (120–300, default 164 as in the reference) must leave ≥ 60 mm of drawer side on each side: `siphonCutWidth <= width - 2*(18 + 60)`.                                                                |
+| R8  | `siphonCutWidth` (120–300, default 164) must leave ≥ 60 mm of drawer side on each side: `siphonCutWidth <= width - 2*(18 + 60)`.                                                                                    |
 | R9  | A decor may only be selected for a board type it supports; changing the board resets an incompatible decor to the first compatible one.                                                                             |
 | R10 | Drawer front heights: the inner front gap is 3 mm, the two fronts split the height equally: `frontH = (height - 3) / 2` (minus R5).                                                                                 |
 | R11 | With `siphonPosition = custom`, `siphonX` (cut-out centre from the left outer side) is clamped so the cut-out keeps the R8 margin: `18 + 60 + siphonCutWidth/2 <= siphonX <= width - (18 + 60 + siphonCutWidth/2)`. |
 | R12 | The countertop (`width + topExtensionLeft + topExtensionRight`) is at most 2800 mm long (one board); the excess is trimmed from the right extension first, then the left.                                           |
-| R13 | `siphonCutDepth` (150–350, default 270 as in the reference) must leave ≥ 60 mm of drawer bottom in front of the cut-out, for every drawer that has one: `siphonCutDepth <= drawer.length - 10 - 60`.                |
+| R13 | `siphonCutDepth` (150–350, default 270) must leave ≥ 60 mm of drawer bottom in front of the cut-out, for every drawer that has one: `siphonCutDepth <= drawer.length - 10 - 60`.                                    |
 | R14 | `continuousGrain` is only possible with `frontGrain = vertical`; otherwise it is turned off.                                                                                                                        |
 
 Resolutions: in R4 the opening / front type wins and `handleDrilling` resets to
 `none`; in R6 the spacing falls back to the largest multiple of 32 that fits; in
-R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). The
-reference's 218 mm is the distance of the cut-out from the side at width 600
-((600 − 164) / 2), not the cut-out width; an earlier version of this spec misread
-it. Drawer boxes are
+R10 an odd remainder goes to the top front (e.g. height 500 → 249 + 248). Drawer
+boxes are
 always chipboard (R9 checks `drawerDecor` and `drawerBottomDecor` against it).
 
 Rule violations never throw in the UI: the engine returns a **normalized
@@ -140,9 +134,9 @@ scene and the cut list (geometry and production list can never diverge).
 Assumptions: board thickness `t = 18`, drawer board 16 mm, fronts overlay the
 carcass with 2 mm gaps at the sides. No back panel: a vanity under a basin is
 open at the back so the siphon can be connected to the wall pipes. The
-countertop lies on the carcass (`height` is the carcass under it, as in the
-reference: 18 mm + 500 mm) and covers the fronts: its depth is `depth + 18 + 5`
-(523 mm at depth 500, as in the reference). The 3D view and camera fit the
+countertop lies on the carcass (`height` is the carcass under it, so the default
+cabinet is 18 mm + 500 mm tall) and covers the fronts: its depth is
+`depth + 18 + 5` (523 mm at depth 500). The 3D view and camera fit the
 whole cabinet including the countertop.
 Drawer box height = front height − 70; the box sits 25 mm above its front's lower
 edge. All construction constants live in `domain/constants.ts`.
@@ -179,7 +173,7 @@ drawers are opened in 3D), `null` otherwise.
 - `cutouts` are in panel coordinates (`u` along the length, `v` along the
   width, from the panel's minimum corner): handle holes Ø5 (two per handle,
   `handleSpacing` apart, at the front's centre or 50 mm from its top).
-- Siphon cut-out (as in the reference): the drawer bottom stays whole; the
+- Siphon cut-out: the drawer bottom stays whole; the
   drawer back has a gap of `siphonCutWidth` through its full height for the pipe, so it is
   made of two pieces (left / right, rounded to whole mm, so the gap may sit up to
   0.5 mm off the requested centre). A plastic tray (`siphonCutWidth` × `siphonCutDepth`,
@@ -206,9 +200,9 @@ labour   = base + per-panel rate
 total    = (boards + edging + hardware + machining + labour) × margin, rounded to 0.01
 ```
 
-All rates live in one `pricing.config.ts`. Calibration target (sanity check
-against the reference, not a copy): default config ≈ 1200–1250 PLN, width
-500 → 1200 adds ≈ 0.4 PLN/mm, height ≈ 0.35 PLN/mm.
+All rates live in one `pricing.config.ts`. Calibration targets (market level
+for this product): default config ≈ 1200–1250 PLN, width 500 → 1200 adds
+≈ 0.4 PLN/mm, height ≈ 0.35 PLN/mm, a siphon cut-out ≈ 44 PLN.
 
 Implementation notes:
 

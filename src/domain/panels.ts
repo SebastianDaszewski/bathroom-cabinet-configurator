@@ -31,7 +31,7 @@ export interface Edges {
   w2: boolean
 }
 
-export interface Cutout {
+interface Cutout {
   kind: 'hole'
   u: number
   v: number

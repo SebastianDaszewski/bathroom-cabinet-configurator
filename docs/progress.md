@@ -1,160 +1,98 @@
 # Progress
 
-Working log for the milestones in [spec.md](spec.md). Update it at the end of
-every milestone.
+Working log for the milestones in [spec.md](spec.md): what was built, which
+decisions were made and why. Updated at the end of every milestone.
 
 ## Context
 
-- This is a test assignment: a non-trivial configurator that demonstrates how
-  the project is structured and whether it stays maintainable — not something
-  that can be generated in two prompts. Code quality, architecture, tests and a
-  clean git history matter more than the number of features.
-- The spec was reverse-engineered from the behaviour of a real made-to-measure
-  vanity configurator (fabrykamebli.pl, product LWUNS2, built on the commercial
-  Variantic player). Only the options, ranges and rules were taken over — no
-  code, assets or branding.
-- Observed reference pricing (computed client-side): default 600×500×500 ≈
-  1236 PLN; ≈ 0.41 PLN/mm of width, ≈ 0.35 PLN/mm of height. Depth also changes
-  the allowed drawer lengths. Our pricing is our own cost-based model,
-  calibrated only to land in a similar range.
-- Values assumed by us, not visible in the reference: 18 mm board, 3 mm gap
-  between fronts, 40 mm depth clearance for drawers (R2), thresholds in R6–R8.
-  The owner may adjust them.
+- A non-trivial configurator meant to show how the project is structured and
+  whether it stays maintainable. Code quality, architecture, tests and a clean
+  git history matter more than the number of features.
+- Price targets (market level for a 600 × 500 × 500 mm vanity with two drawers):
+  ≈ 1236 PLN by default, ≈ 0.40 PLN per mm of width, ≈ 0.35 PLN per mm of
+  height, ≈ 44 PLN for a siphon cut-out. The pricing is a cost-based model
+  calibrated to these targets; tests check ranges, not exact amounts.
+- Construction values are assumptions (18 mm board, 3 mm gap between fronts,
+  40 mm depth clearance, margins in R6–R13). They live in
+  `src/domain/constants.ts` and can be changed in one place.
 
 ## Workflow
 
-- The user commits, pushes and merges. Branch names, commits and PR titles in
+- The owner commits, pushes and merges. Branch names, commits and PR titles in
   English.
 - Ask before using the `frontend-design` plugin for UI/styling work.
-- The UI is in Polish (mandatory); code identifiers and docs in English.
+- The UI is in Polish; code identifiers and docs in English.
 - Show a plan before each milestone; small PRs, one milestone each.
 
 ## Milestones
 
 - [x] **1. Scaffold** — Vite + React 19 + TS strict, R3F + drei, Zustand, Zod,
-      Vitest, oxlint (Vite template default, replaces ESLint), Prettier, GitHub
-      Actions CI, README, CLAUDE.md. Placeholder 3D box in `App.tsx`.
-      Known: bundle ≈ 1.1 MB because of Three.js — code-split in milestone 5.
+      Vitest, oxlint, Prettier, GitHub Actions CI, README, CLAUDE.md.
 - [x] **2. Domain** — `schema.ts` (Zod, defaults, lenient `parseConfig`),
-      `catalog.ts` (4 boards, 8 decors, 2 runners), `constants.ts`, rules
-      R1–R10 in `domain/rules/` with `normalize()` + `allowed*` helpers for the
-      UI. 86 unit tests incl. idempotency of `normalize()`.
-      Decisions: R4 — opening/front type win, drilling resets to `none`;
-      R10 — odd mm goes to the top front; R6 — spacing falls back to the
-      largest multiple of 32 that fits; R8 is dormant with the current ranges
-      (limit ≥ 344 vs. max 236), kept as a guard; drawer boxes are always
-      chipboard; adjustment reasons in English.
-- [x] **3. Panels + cut list** — `panels.ts` (`buildPanels` → one axis-aligned
-      `Panel` per piece, centre + size in mm, cut-outs in panel coordinates),
-      `cutlist.ts` (merge identical pieces, CSV with `;` + BOM). Runner specs in
-      the catalogue, new construction constants. 199 tests incl. invariants
-      over 72 configs: integer sizes, everything inside the cabinet, no
-      overlapping panels, holes and notches inside their panel.
-      Decisions: tandem drawers get wooden sides; new `siphonX` + rule R11 for
-      a custom cut-out position; R6 extended — with `double` drilling each
-      handle gets half the front (`width/2 - 120`), otherwise holes would land
-      outside the front. Drawer box sizes, runner deductions and siphon notch
-      depth are our assumptions.
-- [x] **4. Pricing** — `pricing.config.ts` (all rates), `pricing.ts`
-      (`price(config, panels)`, `subtotals`). Integer grosze, margin inside
-      every line, total = sum of lines. Calibrated: default 1237.12 PLN
-      (rates retuned in M7, see below),
-      ≈ 0.39 PLN/mm width, ≈ 0.34 PLN/mm height (tests check ranges, not exact
-      amounts). 218 tests. All rates are our own estimates.
-- [x] **5. 3D scene** — `scene/geometry.ts` (pure: mm → m, cabinet centred on
-      the origin, decor colours, W/H/D guides, camera distance from cabinet
-      size) + R3F components: panel meshes with outlined edges, dimension lines
-      with DOM labels projected each frame (drei `Html` lost a label under
-      StrictMode), orbit camera that keeps its angle and refits its
-      distance when the size changes, "Reset view". Scene lazy-loaded: app
-      chunk 317 kB (97 kB gzip), Three.js chunk 958 kB (255 kB gzip); chunk
-      warning limit raised to 1000 kB. Only pure helpers are unit-tested
-      (229 tests); the scene itself gets a Playwright smoke test in M8.
-- [x] **6. Stepper UI + store + URL sync** — all user-facing domain strings
-      translated to Polish. `state/`: vanilla Zustand store (every update goes
-      through `normalize`, keeps the latest adjustments), URL encode/decode of
-      non-default fields, localStorage persistence (URL wins), debounced
-      `replaceState`. `ui/`: NumberField (slider + draft text input committed
-      on blur/Enter), ChoiceField (radio segments with disabled options),
-      Toggle, DecorPicker (board-sample swatches). `features/`: 4-step
-      stepper, price panel (total, adjustments, breakdown, copy link, reset).
-      Visual direction (frontend-design): cool bathroom stone + tile-glaze
-      teal, Bricolage Grotesque + Instrument Sans (Google Fonts). Checked in
-      Chrome on desktop; mobile layout still to be verified in M8. 263 tests.
-- [x] **7. Cut-outs & handles in 3D** — panels carry their `drawer`; every
-      panel is an `ExtrudeGeometry` built from `panelOutline` (Ø5 handle
-      holes as real holes) and placed by
-      `panelMatrix` (axes → world, mirrored bases flipped so faces stay
-      outward). Visual hardware from `scene/hardware.ts`: bar handles on hole
-      pairs, aluminium edge profile, dark grip groove, and the metal sides of
-      the Blum drawer box (hardware, so not in the cut list; priced with the
-      runner set). "Otwórz szuflady" slides
-      each drawer out by 75 % of its length (damped, instant with reduced
-      motion). Dimension labels are not occluded (decided). The HDF back panel was
-      removed (owner's call: vanities are open at the back for the pipes);
-      Siphon cut-out redone after checking the reference configurator: the
-      drawer bottom stays whole, the drawer back gets a 164 mm gap (two
-      pieces), and a shallow plastic tray 164 × 270 mm sits in front of it
-      (scene hardware). `siphonOffset` and R8 were removed — the reference's
-      218 mm is the cut-out's distance from the side, not its width. Siphon
-      cut-out is off by default, as in the reference. Prices recalibrated:
-      base labour 283 PLN, siphon cut-out 29.50 PLN → default 1236.65 PLN
-      (reference 1236.08), cut-out +44.43 PLN (reference +44.26),
-      ≈ 0.38 PLN/mm width, ≈ 0.32 PLN/mm height. Checked in Chrome.
-      284 tests.
-- [x] **8. Countertop** — gap found by comparing with the reference: the
-      carcass had only two top rails, but a countertop basin needs a top. Now a
-      full top panel lies on the carcass and covers the fronts
-      (`depth + 18 + 5` = 523 mm, as in the reference), with thickening (a
-      second board, 36 mm) and left / right (0–1800) / front (0–100)
-      extensions; R12 caps the length at one board (2800 mm). `cabinetBounds`
-      drives the scene centre, camera fit and invariants; a countertop length
-      guide appears when it is longer than the carcass. Prices recalibrated
-      (base labour 264 PLN): default 1235.92 PLN (reference 1236.08),
-      ≈ 0.43 PLN/mm width, ≈ 0.32 PLN/mm height. The thickened top first
-      looked like two loose boards (each panel outlined): boards now share a
-      `glueGroup`, the scene outlines the block once, and only the top board is
-      edge-banded (one wide band). Drawers also open individually by clicking
-      them in 3D, as in the reference (pointer cursor on hover; a drag of more
-      than 4 px orbits instead); the button toggles both;
-      the animation was slowed to ≈ 0.7 s. The siphon cut-out size became
-      configurable (owner's request): `siphonCutWidth` 120–300 (R8) and
-      `siphonCutDepth` 150–350 (new R13), defaults 164 × 270 from the
-      reference. "Zacznij od nowa" now asks for confirmation in a native
-      `<dialog>` (Escape / backdrop / "Anuluj" cancel), because it sits right
-      under "Kopiuj link". 311 tests.
-- [x] **9. Look, grain & details** — the 3D view looked like CAD next to the
-      reference. Now: procedural seamless textures (`scene/noise.ts`, tested
-      for tiling; `scene/textures.ts` paints them on canvas), tinted by the
-      decor colour and oriented by `Panel.grain`; outlines removed; 1 mm
-      rounded edges; studio lighting + contact shadow; glued boards render as
-      one solid (`mergeGlued`). Oak / walnut colours lightened. Domain:
-      `sideGrain`, `frontGrain`, `continuousGrain` (R14), grain column in the
-      cut list, `drawerBottomDecor` (W962), front type `edge-handle-ready`
-      (shortened, no profile, no profile price). 339 tests.
-- [x] **10. Summary, CSV, mobile, Playwright** — 5th step "Podsumowanie":
-      grouped configuration (`summaryGroups`, tested), cut list table, CSV
-      download (`szafka-600x500x500-formatki.csv`), copy link; Polish plural
-      helper. Mobile: 3D view on top, steps below, sticky price bar; checked
-      with Playwright screenshots at 375 px. Playwright smoke tests (load,
-      price + URL update, CSV download, reset confirmation, no horizontal
-      scroll) on desktop and 375 px; separate `e2e` CI job. README rewritten
-      for reviewers. 355 unit + 10 e2e tests.
-- [x] **10b. Summary extras** (after reviewing the example project the
-      recruiter sent): price change next to every option and every summary row
-      (`priceDelta` = normalized price with the option minus without it, so
-      rules and side effects are included; Tandem shows +20 PLN because its
-      wooden sides are extra panels); "?" hints explaining options;
-      "Wyślij zapytanie" — Zod-validated form that opens the mail client with
-      the configuration, price and link (no backend; shop address is the
-      `INQUIRY_EMAIL` placeholder); native "Udostępnij" where supported; camera
-      views (3D / front / side / top), PNG snapshot (dimension labels are
-      HTML, so they are drawn onto the image too — lines without numbers looked
-      broken), fullscreen. Perf: the
-      canvas renders on demand and the contact shadow is computed once per
-      shape — e2e tests went from ~25 s to 1–5 s each. 382 unit + 16 e2e.
-- [ ] Deploy to Vercel (owner imports the repo; then add the live link to
-      the README)
+      `catalog.ts`, `constants.ts`, rules in `domain/rules/` with `normalize()`
+      and `allowed*` helpers for the UI. Tests include idempotency of
+      `normalize()` over a grid of extreme configs.
+      Decisions: R4 — opening / front type win, drilling resets to `none`;
+      R10 — an odd millimetre goes to the top front; R6 — spacing falls back
+      to the largest multiple of 32 that fits; drawer boxes are always
+      chipboard.
+- [x] **3. Panels + cut list** — `buildPanels` returns one axis-aligned `Panel`
+      per physical piece (centre + size in mm); `cutlist.ts` merges identical
+      pieces and writes CSV (`;`, UTF-8 BOM, CRLF for Excel). Invariant tests
+      over 72 configs: whole millimetres, nothing outside the cabinet, no
+      overlapping panels, holes inside their panel.
+      Decisions: Tandem drawers get wooden sides; R6 extended for double
+      handles (each handle gets half the front).
+- [x] **4. Pricing** — `pricing.config.ts` (all rates), `price(config, panels)`,
+      `subtotals`. Integer grosze, margin inside every line, total = sum of
+      lines, so the breakdown always adds up.
+- [x] **5. 3D scene** — pure helpers in `scene/geometry.ts` (mm → m, centring,
+      dimension guides, camera fit) + R3F components. Dimension labels are DOM
+      elements projected each frame (drei `Html` lost a label under
+      StrictMode). The scene is lazy-loaded, so Three.js is a separate chunk.
+- [x] **6. Stepper UI + store + URL sync** — Polish UI. Vanilla Zustand store
+      (every update goes through `normalize`, keeps the latest adjustments),
+      URL encode/decode of non-default fields, localStorage (URL wins).
+      Controls: NumberField (slider + text input committed on blur/Enter),
+      ChoiceField, Toggle, DecorPicker. Visual direction: cool bathroom stone +
+      tile-glaze teal, Bricolage Grotesque + Instrument Sans.
+- [x] **7. Cut-outs & handles in 3D** — every panel is an `ExtrudeGeometry`
+      from `panelOutline` (Ø5 handle holes are real holes), placed by
+      `panelMatrix` (mirrored bases flipped so faces stay outward). Hardware
+      drawn in the scene only: bar handles, edge profile, grip groove, metal
+      drawer sides, siphon tray. Drawers open with a button.
+      Corrections during review: no back panel (a vanity is open at the back
+      for the pipes); siphon cut-out reworked — the drawer bottom stays whole,
+      the drawer back gets a gap for the pipe (two pieces) and a shallow tray
+      sits in front of it; the cut-out is off by default.
+- [x] **8. Countertop** — a full top panel on the carcass, covering the fronts
+      (`depth + 18 + 5`), with thickening (second glued board, 36 mm) and
+      left / right / front extensions; R12 caps the length at one board
+      (2800 mm). `cabinetBounds` drives the scene centre, camera fit and
+      invariants. Glued boards share a `glueGroup` and are edge-banded once.
+      Also: drawers open individually on click (a drag orbits instead),
+      configurable siphon cut-out size (R8, R13), confirmation before reset.
+- [x] **9. Look, grain & details** — procedural seamless textures
+      (`scene/noise.ts`, tested for tiling) tinted by the decor colour and
+      oriented by `Panel.grain`; no outlines; 1 mm rounded edges; studio
+      lighting + contact shadow. Domain: side / front grain, continuous grain
+      (R14), grain column in the cut list, drawer-bottom decor, front type
+      `edge-handle-ready`.
+- [x] **10. Summary, CSV, mobile, Playwright** — summary step with the
+      configuration, cut list table, CSV download, copy link. Mobile: 3D view
+      on top, sticky price bar. Playwright smoke tests on desktop and 375 px;
+      separate `e2e` CI job.
+- [x] **10b. Summary extras** — price change next to every option and summary
+      row (`priceDelta`: normalized price with the option minus without it, so
+      rule side effects are included); "?" hints; inquiry form (Zod-validated,
+      opens the mail client, no backend); native share; camera views, PNG
+      snapshot with dimension labels, fullscreen. Perf: the canvas renders on
+      demand and the contact shadow is computed once per shape — e2e tests went
+      from ~25 s to 1–5 s each.
+- [x] **Deploy** — Vercel, imported from the GitHub repo (every PR gets a
+      preview URL): https://bathroom-cabinet-configurator.vercel.app.
+- [x] **Polish** — repository cleanup, architecture guide, agent workflow
+      notes, enforced module boundaries, coverage thresholds.
 
 ## Repo
 
